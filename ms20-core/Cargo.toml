@@ -2,6 +2,7 @@
 name = "ms20-core"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 description = "KaloKorg M20s Pure Rust DSP Engine (PolyBLEP VCOs, TPT KORG35 VCFs, DAR/HADSR EGs, Semi-Modular Patchbay, Ambient Pedals)"
 
 [dependencies]

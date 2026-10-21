@@ -2,6 +2,7 @@
 name = "ms20-plugin"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 authors.workspace = true
 description = "KaloKorg M20s - NIH-plug DAW Plugin Wrapper (VST3 & CLAP) without internal recorder"
 

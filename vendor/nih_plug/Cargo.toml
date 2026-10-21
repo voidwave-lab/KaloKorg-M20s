@@ -2,6 +2,7 @@
 name = "nih_plug"
 version = "0.1.0"
 edition = "2021"
+license.workspace = true
 description = "Offline-compatible NIH-plug API & CLAP/VST3 C-ABI export implementation for KaloKorg M20s"
 
 [dependencies]

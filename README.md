@@ -15,6 +15,7 @@
 5. [VST3 & CLAP DAW Plug-in (`nih-plug`)](#5-vst3--clap-daw-plug-in-nih-plug)
 6. [Keyboard & Interface Controls Reference](#6-keyboard--interface-controls-reference)
 7. [Basic Troubleshooting](#7-basic-troubleshooting)
+8. [License](#8-license)
 
 ---
 
@@ -329,3 +330,9 @@ Copy the generated `.clap` or `.vst3` bundle into your OS plugin directory:
      codesign --force --deep --sign - ~/Library/Audio/Plug-Ins/VST3/"KaloKorg M20s.vst3"
      ```
    - Then trigger a plug-in rescan inside your DAW's Preferences / Plug-in Manager.
+
+---
+
+## 8. License
+
+All source code in this project is licensed under the **GNU General Public License v3.0 (GPL-3.0-or-later)**. See [`LICENSE`](./LICENSE) for the full license text.

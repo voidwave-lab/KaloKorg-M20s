@@ -2,6 +2,7 @@
 name = "ms20-wasm"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 description = "WebAssembly AudioWorklet wrapper for KaloKorg M20s"
 
 [lib]

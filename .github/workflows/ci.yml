@@ -1,17 +1,22 @@
-name: Rust DSP, TUI & DAW Plugin CI
+name: KaloKorg M20s CI (DSP, TUI, Web UI & VST3/CLAP Plugin)
 
 on:
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
 
 jobs:
   build-and-test:
-    name: Build & Test (${{ matrix.os }})
+    name: Build, Test & Bundle (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -22,17 +27,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Linux audio headers (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libasound2-dev
+
       - name: Install Rust stable toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache Cargo registry and target
+      - name: Cache Cargo registry and target directory
         uses: Swatinem/rust-cache@v2
 
-      - name: Run DSP & Plugin unit tests
+      - name: Check workspace compilation (all targets)
+        run: cargo check --workspace --all-targets
+
+      - name: Run DSP Engine & DAW Plugin unit tests
         run: cargo test --workspace --verbose
 
-      - name: Build release binaries (TUI + Web UI + Plugin)
+      - name: Build release binaries (Standalone TUI + Web UI + Plugin)
         run: cargo build --workspace --release
 
       - name: Bundle VST3 & CLAP DAW plugins
         run: cargo run --release -p ms20-plugin --bin bundle-plugin
+
+      - name: Upload Standalone Binary & VST3/CLAP Plugin Bundles
+        uses: actions/upload-artifact@v4
+        with:
+          name: kalokorg-m20s-${{ matrix.os }}
+          path: |
+            target/release/kalokorg-m20s*
+            target/bundled/KaloKorg M20s.clap/**
+            target/bundled/KaloKorg M20s.vst3/**
+          if-no-files-found: error

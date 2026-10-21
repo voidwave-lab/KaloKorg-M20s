@@ -1,0 +1,13 @@
+[package]
+name = "ms20-wasm"
+version.workspace = true
+edition.workspace = true
+description = "WebAssembly AudioWorklet wrapper for KaloKorg M20s"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+ms20-core = { path = "../ms20-core" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

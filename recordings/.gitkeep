@@ -1,0 +1,1 @@
+# Keep recordings directory in Git (recorded .wav files are ignored via .gitignore)

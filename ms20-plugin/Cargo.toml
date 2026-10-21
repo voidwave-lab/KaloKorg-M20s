@@ -1,0 +1,24 @@
+[package]
+name = "ms20-plugin"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "KaloKorg M20s - NIH-plug DAW Plugin Wrapper (VST3 & CLAP) without internal recorder"
+
+[lib]
+name = "kalokorg_m20s_plugin"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "bundle-plugin"
+path = "src/bin/bundle.rs"
+
+[dependencies]
+ms20-core = { path = "../ms20-core" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Uses the workspace NIH-plug compatible layer for 100% offline builds.
+# To build against upstream nih-plug with network access, you can swap this line to:
+# nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+nih_plug = { path = "../vendor/nih_plug" }

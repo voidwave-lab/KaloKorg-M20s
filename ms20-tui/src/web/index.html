@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KaloKorg M20s — Korg MS-20 Mini Synthesizer & Ambient Pedalboard</title>
+<style>
+  :root {
+    --panel-bg: #151618;
+    --panel-ink: #f0eee9;
+    --panel-muted: #a9a7a0;
+    --accent-gold: #f3c64d;
+    --accent-red: #ff3b30;
+    --accent-green: #32d74b;
+    --accent-cyan: #5ac8fa;
+  }
+  * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: #0b0c0e;
+    color: var(--panel-ink);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 18px;
+    background: linear-gradient(180deg, #222428 0%, #141518 100%);
+    border-bottom: 2px solid #3a3d42;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .brand-title {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #fff;
+  }
+  .brand-sub {
+    font-size: 11px;
+    color: var(--accent-gold);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
+  }
+  .tab-btn {
+    background: #23262b;
+    color: #ccc;
+    border: 1.5px solid #4a4e57;
+    padding: 7px 16px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    background: var(--panel-ink);
+    color: #111;
+    border-color: #fff;
+    box-shadow: 0 0 12px rgba(255,255,255,0.25);
+  }
+  .toolbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .ctrl-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1b1d21;
+    border: 1px solid #3c4048;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  select, button.small-btn {
+    background: #292c33;
+    color: #fff;
+    border: 1px solid #555963;
+    border-radius: 3px;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  button.small-btn.active-drone {
+    background: #1f7a34;
+    border-color: #4ee66e;
+  }
+  button.small-btn.rec-btn {
+    background: #5a1818;
+    border-color: #ff453a;
+    color: #ffdad6;
+  }
+  button.small-btn.rec-btn.recording {
+    background: #e01e1e;
+    color: #fff;
+    animation: pulse-rec 0.9s infinite alternate;
+  }
+  @keyframes pulse-rec {
+    from { box-shadow: 0 0 4px #ff3b30; }
+    to { box-shadow: 0 0 16px #ff3b30; }
+  }
+  #scopeCanvas {
+    width: 120px;
+    height: 28px;
+    background: #08120c;
+    border: 1px solid #2d593b;
+    border-radius: 3px;
+  }
+
+  /* MAIN MS-20 FRONT PANEL REPLICA (Matches front-panel.jpg, NO KEYBOARD) */
+  .ms20-chassis {
+    margin: 14px auto;
+    max-width: 1560px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.03), transparent 50%),
+      repeating-linear-gradient(90deg, #17181b 0px, #17181b 2px, #151619 2px, #151619 4px);
+    border: 4px solid #d8d6d0;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.85), inset 0 0 20px rgba(0,0,0,0.7);
+    display: grid;
+    grid-template-columns: 57% 43%;
+    min-height: 700px;
+    position: relative;
+  }
+
+  /* LEFT 7 COLUMNS */
+  .ms20-left-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border-right: 3px solid var(--panel-ink);
+  }
+  .ms20-col {
+    border-right: 2px solid var(--panel-ink);
+    display: flex;
+    flex-direction: column;
+  }
+  .ms20-col:last-child {
+    border-right: none;
+  }
+  .panel-box {
+    border-bottom: 2px solid var(--panel-ink);
+    padding: 8px 4px 12px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    flex: 1;
+    position: relative;
+  }
+  .panel-box:last-child {
+    border-bottom: none;
+  }
+  .box-header {
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.7px;
+    color: var(--panel-ink);
+    padding-left: 4px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ROTARY KNOB WIDGET */
+  .knob-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 4px 0;
+    cursor: ns-resize;
+  }
+  .knob-svg {
+    width: 68px;
+    height: 68px;
+    overflow: visible;
+  }
+  .knob-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: var(--panel-ink);
+    margin-top: 2px;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .knob-val {
+    font-size: 9px;
+    color: var(--accent-gold);
+    font-family: monospace;
+    margin-top: 1px;
+  }
+
+  /* RIGHT HALF: PATCHBAY (TOP) & ESP (BOTTOM) */
+  .ms20-right-half {
+    display: grid;
+    grid-template-rows: 64% 36%;
+    position: relative;
+  }
+  .patchbay-section {
+    border-bottom: 3px solid var(--panel-ink);
+    padding: 12px 14px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .esp-section {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  /* BLOCK DIAGRAM BOXES IN PATCHBAY */
+  .signal-flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .flow-boxes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .flow-node {
+    border: 1.5px solid var(--panel-ink);
+    padding: 3px 7px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    background: #1b1c20;
+  }
+  .flow-arrow {
+    color: var(--panel-muted);
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  /* 3.5MM JACK GRID */
+  .jacks-matrix {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px 4px;
+    margin-top: 6px;
+    position: relative;
+    z-index: 2;
+  }
+  .jack-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .jack-socket {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #050505 0%, #050505 38%, #999 42%, #e2e2e2 56%, #666 72%, #222 100%);
+    border: 2px solid #bbb;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  .jack-socket:hover {
+    transform: scale(1.14);
+    box-shadow: 0 0 10px var(--accent-gold);
+  }
+  .jack-socket.source-jack {
+    border-color: #7cd4a0;
+  }
+  .jack-socket.dest-jack {
+    border-color: #f2c97d;
+  }
+  .jack-socket.selected-jack {
+    box-shadow: 0 0 14px 4px #32d74b;
+    transform: scale(1.18);
+  }
+  .jack-socket.plugged-jack::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    box-shadow: 0 0 6px var(--accent-gold);
+  }
+  .jack-title {
+    font-size: 8.5px;
+    font-weight: 800;
+    color: var(--panel-ink);
+    margin-top: 3px;
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+  .jack-sub {
+    font-size: 7.5px;
+    color: var(--panel-muted);
+  }
+
+  #cableOverlaySvg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ESP KNOBS & LOGO ROW */
+  .esp-knobs-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr) 1.3fr;
+    align-items: center;
+    gap: 4px;
+  }
+  .korg-logo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-right: 8px;
+  }
+  .korg-wordmark {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: var(--panel-ink);
+    line-height: 0.95;
+  }
+  .korg-submark {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--accent-gold);
+    margin-top: 3px;
+  }
+  .led-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3a1111;
+    border: 1px solid #772222;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+  .led-dot.on {
+    background: #ff2d20;
+    box-shadow: 0 0 10px #ff2d20;
+  }
+
+  /* =====================================================================
+     TAB 2: AMBIENT GUITAR PEDALBOARD VIEW
+     ===================================================================== */
+  .pedalboard-container {
+    max-width: 1540px;
+    margin: 16px auto;
+    padding: 0 16px 32px 16px;
+    display: none;
+  }
+  .chain-routing-bar {
+    background: #17191e;
+    border: 2px solid #383d47;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chain-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chain-node {
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: #252932;
+    border: 1px solid #565d6c;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .chain-node.active-pedal {
+    border-color: var(--accent-green);
+    color: #fff;
+  }
+  .pedals-stage {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    align-items: stretch;
+  }
+  .stompbox {
+    border-radius: 14px;
+    padding: 14px 12px 16px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 540px;
+    box-shadow: 0 18px 36px rgba(0,0,0,0.75), inset 0 2px 4px rgba(255,255,255,0.35);
+    position: relative;
+    border: 3px solid rgba(255,255,255,0.2);
+  }
+  /* 0. BOSS CE-2W / DC-2W Waza Craft Stereo Chorus Metallic Sky Blue */
+  .stomp-ce2w {
+    background: linear-gradient(165deg, #5ec2eb 0%, #3595c4 55%, #1d6b94 100%);
+    color: #0b1620;
+    border-color: #a8e6ff;
+  }
+  .stomp-ce2w .knob-label, .stomp-ce2w .stomp-title, .stomp-ce2w .stomp-subtitle {
+    color: #08121a !important;
+  }
+  .stomp-ce2w .knob-val {
+    color: #ffffff !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.65);
+  }
+  /* 1. Zoom MS-70CDR Aqua Metallic */
+  .stomp-zoom {
+    background: linear-gradient(165deg, #1b8aa8 0%, #10607a 55%, #0b4659 100%);
+    border-color: #6ad5f5;
+  }
+  /* 2. Boss DD-8 Classic Silver/White + Black Pad */
+  .stomp-dd8 {
+    background: linear-gradient(165deg, #e8e9ec 0%, #cfd2d8 60%, #b5b9c2 100%);
+    color: #151618;
+    border-color: #ffffff;
+  }
+  .stomp-dd8 .knob-label, .stomp-dd8 .stomp-title {
+    color: #141518 !important;
+  }
+  .stomp-dd8 .knob-val {
+    color: #b32400 !important;
+  }
+  /* 3. Red Panda Particle 2 */
+  .stomp-particle {
+    background: linear-gradient(165deg, #23252a 0%, #17181c 65%, #101114 100%);
+    border-color: #ff453a;
+  }
+  /* 4. Strymon Cloudburst Cornflower Anodized Blue */
+  .stomp-cloudburst {
+    background: linear-gradient(165deg, #3c69b0 0%, #274a87 50%, #1c3564 100%);
+    border-color: #8ab4ff;
+  }
+
+  .stomp-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .order-btn {
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .order-btn:hover {
+    background: rgba(255,255,255,0.25);
+  }
+  .stomp-header {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .stomp-title {
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+  .stomp-subtitle {
+    font-size: 10px;
+    opacity: 0.85;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+  }
+  .zoom-lcd {
+    background: #9bbc0f;
+    color: #0f380f;
+    font-family: monospace;
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 3px solid #2b332f;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.45);
+    margin: 6px 0 10px 0;
+    text-align: center;
+    font-weight: 900;
+    font-size: 12px;
+  }
+  .stomp-knobs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    justify-items: center;
+    margin: 6px 0;
+  }
+  .stomp-footswitch-area {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid rgba(255,255,255,0.2);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  .footswitch-btn {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #f5f5f5 0%, #b8b8b8 45%, #6e6e6e 80%, #333 100%);
+    border: 4px solid #d0d0d0;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.65);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 900;
+    color: #111;
+    transition: transform 0.08s;
+  }
+  .footswitch-btn:active {
+    transform: scale(0.92);
+  }
+  .boss-pad {
+    width: 100%;
+    height: 76px;
+    background: repeating-linear-gradient(0deg, #1b1c1f 0px, #1b1c1f 4px, #24262b 4px, #24262b 8px);
+    border: 3px solid #3a3d45;
+    border-radius: 8px;
+    color: #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+  }
+  .boss-pad:active {
+    transform: translateY(2px);
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP HEADER & TOOLBAR -->
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-title">KALOKORG M20s</span>
+    <span class="brand-sub">KORG35 Semi-Modular Synthesizer &amp; Ambient Pedalboard</span>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="tab-btn active" id="tabSynthBtn" onclick="switchTab('synth')">1. MS-20s SYNTH PANEL</button>
+    <button class="tab-btn" id="tabPedalsBtn" onclick="switchTab('pedals')">2. AMBIENT FX PEDALS (5 STOMPBOXES)</button>
+  </div>
+
+  <div class="toolbar-controls">
+    <div class="ctrl-pill">
+      <span>Preset:</span>
+      <select id="presetSelect" onchange="loadPreset(this.value)">
+        <option value="0">01. Classic MS-20 Lead (Fig.5)</option>
+        <option value="1">02. KORG35 Dual-Peak Scream</option>
+        <option value="2">03. TC4011 CMOS XOR Ring Mod</option>
+        <option value="3">04. Cloudburst Cathedral Ensemble</option>
+        <option value="4">05. Particle 2 Granular Cosmos</option>
+        <option value="5">06. Sub-Bass KORG35 Growl</option>
+      </select>
+    </div>
+
+    <div class="ctrl-pill">
+      <span>Filter IC:</span>
+      <select id="filterRevSelect" onchange="setParam(36, parseFloat(this.value))">
+        <option value="0">Rev.1 KORG35 (KLM-128)</option>
+        <option value="1">Rev.2 LM13600 OTA (KLM-307)</option>
+      </select>
+    </div>
+
+    <div class="ctrl-pill">
+      <span>MIDI In:</span>
+      <select id="midiSelect">
+        <option value="all">All Connected MIDI Controllers</option>
+      </select>
+    </div>
+
+    <div class="ctrl-pill" title="Master Output Signal Pad / Attenuation Trim (-30 dB to +6 dB) to protect headphones &amp; speakers while preserving hot internal KORG35 saturation">
+      <span>Out Pad:</span>
+      <input type="range" id="outputPadSlider" min="-30" max="6" step="0.5" value="-6.0" style="width:78px;accent-color:var(--accent-gold);cursor:pointer;" oninput="onOutputPadInput(this.value)" />
+      <span id="outputPadLabel" style="color:var(--accent-gold);font-family:monospace;min-width:52px;">-6.0 dB</span>
+    </div>
+
+    <button class="small-btn" id="droneBtn" onclick="toggleDrone()">DRONE GATE: OFF</button>
+    <button class="small-btn" id="webAudioBtn" onclick="toggleBrowserWebAudio()">🔇 BROWSER AUDIO: OFF (Using Rust CoreAudio)</button>
+    <button class="small-btn rec-btn" id="recBtn" onclick="toggleRecording()">● REC SESSION WAV</button>
+    <a id="downloadWavLink" style="display:none;color:#5ac8fa;font-size:11px;font-weight:800;text-decoration:underline;" href="/api/recording/latest.wav" download="kalokorg_m20s_session.wav">⬇ Download WAV</a>
+    <canvas id="scopeCanvas" width="120" height="28"></canvas>
+  </div>
+</div>
+
+<!-- =======================================================================
+     TAB 1: KORG MS-20s FRONT PANEL (Strictly faithful to front-panel.jpg, no keys)
+     ======================================================================= -->
+<div id="synthView" class="ms20-chassis">
+  <svg id="cableOverlaySvg"></svg>
+
+  <!-- LEFT 7 COLUMNS OF ROTARY KNOBS -->
+  <div class="ms20-left-grid">
+    <!-- COL 1: VCO 1 & PORTAMENTO -->
+    <div class="ms20-col">
+      <div class="panel-box" style="flex:3.2;">
+        <div class="box-header">VCO 1</div>
+        <div id="knob-0"></div>
+        <div id="knob-1"></div>
+        <div id="knob-2"></div>
+      </div>
+      <div class="panel-box" style="flex:1.1;">
+        <div class="box-header">PORTAMENTO</div>
+        <div id="knob-3"></div>
+      </div>
+    </div>
+
+    <!-- COL 2: VCO 2 & MASTER TUNE -->
+    <div class="ms20-col">
+      <div class="panel-box" style="flex:3.2;">
+        <div class="box-header">VCO 2</div>
+        <div id="knob-4"></div>
+        <div id="knob-5"></div>
+        <div id="knob-6"></div>
+      </div>
+      <div class="panel-box" style="flex:1.1;">
+        <div class="box-header">MASTER TUNE</div>
+        <div id="knob-7"></div>
+      </div>
+    </div>
+
+    <!-- COL 3: VCO MIXER & FREQ MOD -->
+    <div class="ms20-col">
+      <div class="panel-box" style="flex:1;">
+        <div class="box-header">VCO MIXER</div>
+        <div id="knob-8"></div>
+        <div id="knob-9"></div>
+      </div>
+      <div class="panel-box" style="flex:1;">
+        <div class="box-header">FREQ MOD</div>
+        <div id="knob-10"></div>
+        <div id="knob-11"></div>
+      </div>
+    </div>
+
+    <!-- COL 4: HPF & HPF MOD -->
+    <div class="ms20-col">
+      <div class="panel-box" style="flex:1;">
+        <div class="box-header">HPF</div>
+        <div id="knob-12"></div>
+        <div id="knob-13"></div>
+      </div>
+      <div class="panel-box" style="flex:1;">
+        <div class="box-header">HPF MOD</div>
+        <div id="knob-14"></div>
+        <div id="knob-15"></div>
+      </div>
+    </div>
+
+    <!-- COL 5: LPF & LPF MOD -->
+    <div class="ms20-col">
+      <div class="panel-box" style="flex:1;">
+        <div class="box-header">LPF</div>
+        <div id="knob-16"></div>
+        <div id="knob-17"></div>
+      </div>
+      <div class="panel-box" style="flex:1;">
+        <div class="box-header">LPF MOD</div>
+        <div id="knob-18"></div>
+        <div id="knob-19"></div>
+      </div>
+    </div>
+
+    <!-- COL 6: VCA (TOP), MG & ENV 1 (BOTTOM) -->
+    <div class="ms20-col">
+      <div class="panel-box" style="flex:1.05;">
+        <div class="box-header">VCA</div>
+        <svg width="96" height="58" viewBox="0 0 96 58">
+          <line x1="6" y1="26" x2="34" y2="26" stroke="#f0eee9" stroke-width="2"/>
+          <polygon points="34,10 34,42 66,26" fill="none" stroke="#f0eee9" stroke-width="2"/>
+          <line x1="66" y1="26" x2="90" y2="26" stroke="#f0eee9" stroke-width="2"/>
+          <line x1="48" y1="35" x2="48" y2="48" stroke="#f0eee9" stroke-width="1.8"/>
+          <text x="48" y="56" fill="#f0eee9" font-size="8" font-weight="bold" text-anchor="middle">EG2 &amp; EXT</text>
+        </svg>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;flex:2.6;width:100%;">
+        <div class="panel-box" style="border-right:2px solid var(--panel-ink);border-bottom:none;">
+          <div class="box-header">MG</div>
+          <div id="knob-20"></div>
+          <div id="knob-21"></div>
+        </div>
+        <div class="panel-box" style="border-bottom:none;">
+          <div class="box-header">ENV 1</div>
+          <div id="knob-22"></div>
+          <div id="knob-23"></div>
+          <div id="knob-24"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 7: ENV 2 (HADSR) -->
+    <div class="ms20-col">
+      <div class="panel-box" style="flex:1;">
+        <div class="box-header">ENV 2</div>
+        <div id="knob-25"></div>
+        <div id="knob-26"></div>
+        <div id="knob-27"></div>
+        <div id="knob-28"></div>
+        <div id="knob-29"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT HALF: SEMI-MODULAR PATCHBAY & EXTERNAL SIGNAL PROCESSOR (ESP) -->
+  <div class="ms20-right-half">
+    <div class="patchbay-section">
+      <div class="signal-flow-row">
+        <div class="flow-boxes">
+          <span class="flow-node">VCO 1</span>
+          <span class="flow-node">VCO 2</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">MIX</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">HPF</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">LPF</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">VCA</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="knob-30"></div>
+          <button class="small-btn" onclick="clearAllCables()" title="Unplug all 3.5mm patch cables">Clear Cables</button>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--accent-gold);margin:2px 0;">
+        Click any <b>GREEN Source Jack</b> then any <b>GOLD Input Jack</b> to connect a 3.5mm patch cord (click plugged input to unplug).
+      </div>
+
+      <!-- 35 JACKS MATRIX -->
+      <div class="jacks-matrix" id="patchbayMatrix"></div>
+    </div>
+
+    <!-- BOTTOM RIGHT: ESP (EXTERNAL SIGNAL PROCESSOR) -->
+    <div class="esp-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+        <div class="flow-boxes">
+          <span class="flow-node">SIGNAL IN</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">AMP</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">BAND PASS</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">F-V CONVERT</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-node">ENVELOPE FOLLOWER</span>
+        </div>
+        <div style="font-size:10px;font-weight:800;">
+          <span class="led-dot" id="espPeakLed"></span>PEAK &nbsp;&nbsp;
+          <span class="led-dot" id="espTrigLed"></span>TRIG
+        </div>
+      </div>
+
+      <div class="esp-knobs-row">
+        <div id="knob-31"></div>
+        <div id="knob-32"></div>
+        <div id="knob-33"></div>
+        <div id="knob-34"></div>
+        <div id="knob-35"></div>
+        <div class="korg-logo-box">
+          <div class="korg-wordmark">KORG</div>
+          <div class="korg-submark">KALOKORG M20s</div>
+          <div style="font-size:9px;color:#888;margin-top:4px;">MIDI + Z..M / Q..U Audition Active</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =======================================================================
+     TAB 2: AMBIENT GUITAR PEDALBOARD (4 Stompboxes with Reorder & Bypass)
+     ======================================================================= -->
+<div id="pedalsView" class="pedalboard-container">
+  <div class="chain-routing-bar">
+    <div class="chain-pills" id="chainOrderPills"></div>
+    <div style="font-size:12px;color:#aaa;">
+      Use <b>◀ Move Left / Move Right ▶</b> on any pedal to customize your ambient effect chain order, or click the bottom <b>Footswitch</b> to bypass.
+    </div>
+  </div>
+
+  <div class="pedals-stage" id="pedalsStage"></div>
+</div>
+
+<script>
+// =========================================================================
+// STATE & DEFINITIONS
+// =========================================================================
+const VCO1_WAVES = ["TRI /\\", "SAW |\\", "PW |_|", "NOISE"];
+const VCO1_SCALES = ["32'", "16'", "8'", "4'"];
+const VCO2_WAVES = ["SAW |\\", "SQR |_|", "PLS |_", "RING XOR"];
+const VCO2_SCALES = ["16'", "8'", "4'", "2'"];
+
+const KNOB_DEFS = [
+  { id: 0,  label: "WAVE FORM", min: 0, max: 3, step: 1, enumLabels: VCO1_WAVES },
+  { id: 1,  label: "PW",        min: 0, max: 10, step: 0.1 },
+  { id: 2,  label: "SCALE",     min: 0, max: 3, step: 1, enumLabels: VCO1_SCALES },
+  { id: 3,  label: "TIME",      min: 0, max: 10, step: 0.1 },
+  { id: 4,  label: "WAVE FORM", min: 0, max: 3, step: 1, enumLabels: VCO2_WAVES },
+  { id: 5,  label: "PITCH",     min: -5, max: 5, step: 0.1 },
+  { id: 6,  label: "SCALE",     min: 0, max: 3, step: 1, enumLabels: VCO2_SCALES },
+  { id: 7,  label: "MASTER TUNE", min: -5, max: 5, step: 0.1 },
+  { id: 8,  label: "VCO 1 LEVEL", min: 0, max: 10, step: 0.1 },
+  { id: 9,  label: "VCO 2 LEVEL", min: 0, max: 10, step: 0.1 },
+  { id: 10, label: "MG/T.EXT",  min: 0, max: 10, step: 0.1 },
+  { id: 11, label: "EG1/EXT",   min: 0, max: 10, step: 0.1 },
+  { id: 12, label: "CUTOFF",    min: 0, max: 10, step: 0.1 },
+  { id: 13, label: "PEAK",      min: 0, max: 10, step: 0.1 },
+  { id: 14, label: "MG/T.EXT",  min: 0, max: 10, step: 0.1 },
+  { id: 15, label: "EG2/EXT",   min: 0, max: 10, step: 0.1 },
+  { id: 16, label: "CUTOFF",    min: 0, max: 10, step: 0.1 },
+  { id: 17, label: "PEAK",      min: 0, max: 10, step: 0.1 },
+  { id: 18, label: "MG/T.EXT",  min: 0, max: 10, step: 0.1 },
+  { id: 19, label: "EG2/EXT",   min: 0, max: 10, step: 0.1 },
+  { id: 20, label: "WAVEFORM",  min: 0, max: 10, step: 0.1 },
+  { id: 21, label: "FREQUENCY", min: 0, max: 10, step: 0.1 },
+  { id: 22, label: "DELAY",     min: 0, max: 10, step: 0.1 },
+  { id: 23, label: "ATTACK",    min: 0, max: 10, step: 0.1 },
+  { id: 24, label: "RELEASE",   min: 0, max: 10, step: 0.1 },
+  { id: 25, label: "HOLD",      min: 0, max: 10, step: 0.1 },
+  { id: 26, label: "ATTACK",    min: 0, max: 10, step: 0.1 },
+  { id: 27, label: "DECAY",     min: 0, max: 10, step: 0.1 },
+  { id: 28, label: "SUSTAIN",   min: 0, max: 10, step: 0.1 },
+  { id: 29, label: "RELEASE",   min: 0, max: 10, step: 0.1 },
+  { id: 30, label: "VOLUME",    min: 0, max: 10, step: 0.1 },
+  { id: 31, label: "SIGNAL LEVEL", min: 0, max: 10, step: 0.1 },
+  { id: 32, label: "LOW CUT FREQ", min: 0, max: 10, step: 0.1 },
+  { id: 33, label: "HIGH CUT FREQ", min: 0, max: 10, step: 0.1 },
+  { id: 34, label: "CV ADJUST", min: 0, max: 10, step: 0.1 },
+  { id: 35, label: "THRESHOLD", min: 0, max: 10, step: 0.1 }
+];
+
+const PATCH_JACKS = [
+  // Row 1: Main modulation & filter/VCA inputs + Signal Out
+  { type: 'dst', idx: 0,  label: 'TOTAL',       sub: 'IN' },
+  { type: 'dst', idx: 1,  label: 'FREQ',        sub: 'IN' },
+  { type: 'dst', idx: 2,  label: 'EXT IN',      sub: 'AUDIO' },
+  { type: 'dst', idx: 3,  label: 'HPF FC',      sub: 'CUTOFF' },
+  { type: 'dst', idx: 4,  label: 'LPF FC',      sub: 'CUTOFF' },
+  { type: 'dst', idx: 5,  label: 'INIT GAIN',   sub: 'VCA IN' },
+  { type: 'src', idx: 0,  label: 'SIGNAL OUT',  sub: 'OUT' },
+  // Row 2: MG, EG1, EG2, VCO CV, Phones
+  { type: 'src', idx: 2,  label: 'MG TRI /\\',  sub: 'OUT' },
+  { type: 'src', idx: 3,  label: 'MG PLS |_|',  sub: 'OUT' },
+  { type: 'src', idx: 4,  label: 'EG1 OUT +',   sub: 'NORM' },
+  { type: 'src', idx: 5,  label: 'EG1 REV -',   sub: 'INV' },
+  { type: 'src', idx: 6,  label: 'EG2 REV',     sub: 'OUT' },
+  { type: 'dst', idx: 6,  label: 'VCO 1+2',     sub: 'CV IN' },
+  { type: 'src', idx: 1,  label: 'PHONES',      sub: 'OUT' },
+  // Row 3: S&H, Patch VCA, VCO 2 CV, Key CV
+  { type: 'dst', idx: 11, label: 'S&H CLK',     sub: 'IN' },
+  { type: 'dst', idx: 10, label: 'S&H IN',      sub: 'IN' },
+  { type: 'src', idx: 9,  label: 'S&H OUT',     sub: 'OUT' },
+  { type: 'dst', idx: 12, label: 'VCA IN',      sub: 'PATCH' },
+  { type: 'dst', idx: 13, label: 'VCA CTRL',    sub: 'IN' },
+  { type: 'src', idx: 10, label: 'VCA OUT',     sub: 'PATCH' },
+  { type: 'dst', idx: 7,  label: 'VCO 2 CV',    sub: 'IN' },
+  // Row 4: Noise, Triggers, Wheel, ESP Jacks
+  { type: 'src', idx: 11, label: 'PINK',        sub: 'NOISE' },
+  { type: 'src', idx: 12, label: 'WHITE',       sub: 'NOISE' },
+  { type: 'dst', idx: 8,  label: 'EG1 TRIG',    sub: 'IN' },
+  { type: 'dst', idx: 9,  label: 'TRIG IN',     sub: 'EG1+2' },
+  { type: 'src', idx: 8,  label: 'TRIG OUT',    sub: 'KBD' },
+  { type: 'src', idx: 7,  label: 'KEY CV',      sub: 'OUT' },
+  { type: 'src', idx: 13, label: 'WHEEL (^)',   sub: 'OUT' },
+  // Row 5: ESP Patch Jacks
+  { type: 'dst', idx: 14, label: 'ESP SIG IN',  sub: 'IN' },
+  { type: 'src', idx: 15, label: 'ESP AMP',     sub: 'OUT' },
+  { type: 'src', idx: 16, label: 'ESP BPF',     sub: 'OUT' },
+  { type: 'src', idx: 17, label: 'ESP F-V',     sub: 'CV OUT' },
+  { type: 'src', idx: 18, label: 'ESP ENV',     sub: 'OUT' },
+  { type: 'src', idx: 19, label: 'ESP TRIG',    sub: 'OUT' },
+  { type: 'src', idx: 14, label: 'MOMENT SW',   sub: 'OUT' }
+];
+
+let paramValues = {
+  0:1, 1:0, 2:2, 3:0,
+  4:0, 5:0.05, 6:1, 7:0,
+  8:10, 9:8.5, 10:0, 11:0,
+  12:0.5, 13:1.5, 14:0, 15:0,
+  16:6.8, 17:3.5, 18:0, 19:4.5,
+  20:5.0, 21:4.5, 22:0, 23:0.5, 24:2.5,
+  25:0, 26:0.3, 27:4.0, 28:7.5, 29:3.5,
+  30:6.5, 31:5.0, 32:2.0, 33:8.0, 34:5.0, 35:4.0,
+  36:0, 37:0, 38:-6.0,
+  // Pedals
+  100:1, 101:0, 102:7.5, 103:4.2, 104:7.0, 105:6.2,
+  110:1, 111:0, 112:6.5, 113:6.8, 114:5.5, 115:5.0,
+  120:1, 121:0, 122:5.8, 123:6.8, 124:7.5, 125:6.2, 126:6.5, 127:0,
+  130:1, 131:2, 132:8.4, 133:7.8, 134:6.8, 135:7.0, 136:2.8, 137:5.5,
+  140:1, 141:0, 142:4.2, 143:7.4, 144:9.2, 145:6.5, 146:6.8
+};
+
+let pedalChainOrder = ["BossCe2wChorus", "ZoomMs70Cdr", "RedPandaParticle2", "BossDd8", "StrymonCloudburst"];
+let activeCables = [];
+let pendingSourceJack = null;
+
+// =========================================================================
+// RENDER SVG ROTARY KNOBS
+// =========================================================================
+function createKnobSvg(val, min, max) {
+  const norm = Math.max(0, Math.min(1, (val - min) / (max - min || 1)));
+  const angle = -135 + norm * 270;
+  let ticksHtml = "";
+  for (let i = 0; i <= 10; i++) {
+    const a = (-135 + (i / 10) * 270) * Math.PI / 180;
+    const x1 = 34 + Math.sin(a) * 25;
+    const y1 = 34 - Math.cos(a) * 25;
+    const x2 = 34 + Math.sin(a) * 31;
+    const y2 = 34 - Math.cos(a) * 31;
+    ticksHtml += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#e6e4de" stroke-width="1.4"/>`;
+  }
+  return `
+    <svg class="knob-svg" viewBox="0 0 68 68">
+      ${ticksHtml}
+      <circle cx="34" cy="34" r="21" fill="#111" stroke="#aaa" stroke-width="1.6"/>
+      <circle cx="34" cy="34" r="16" fill="#23252a" stroke="#555" stroke-width="1"/>
+      <g transform="rotate(${angle.toFixed(1)} 34 34)">
+        <line x1="34" y1="34" x2="34" y2="14" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/>
+      </g>
+    </svg>`;
+}
+
+function formatKnobValue(def, val) {
+  if (def.enumLabels) {
+    const idx = Math.round(val) % def.enumLabels.length;
+    return def.enumLabels[idx];
+  }
+  return (def.min < 0 && val > 0 ? "+" : "") + Number(val).toFixed(1);
+}
+
+function mountKnob(containerId, def) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const val = paramValues[def.id] ?? def.min;
+  el.innerHTML = `
+    <div class="knob-wrap" data-param="${def.id}">
+      <div id="knob-svg-${def.id}">${createKnobSvg(val, def.min, def.max)}</div>
+      <div class="knob-label">${def.label}</div>
+      <div class="knob-val" id="knob-val-${def.id}">${formatKnobValue(def, val)}</div>
+    </div>`;
+  const wrap = el.querySelector(".knob-wrap");
+  attachKnobDrag(wrap, def);
+}
+
+function attachKnobDrag(wrap, def) {
+  let startY = 0;
+  let startVal = 0;
+  const onMove = (e) => {
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dy = startY - clientY;
+    const span = def.max - def.min;
+    let next = startVal + (dy / 130) * span;
+    if (def.step >= 1) next = Math.round(next);
+    next = Math.max(def.min, Math.min(def.max, next));
+    setParam(def.id, next);
+  };
+  const onUp = () => {
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+    window.removeEventListener("touchmove", onMove);
+    window.removeEventListener("touchend", onUp);
+  };
+  wrap.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    startY = e.clientY;
+    startVal = paramValues[def.id] ?? def.min;
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  });
+  wrap.addEventListener("touchstart", (e) => {
+    startY = e.touches[0].clientY;
+    startVal = paramValues[def.id] ?? def.min;
+    window.addEventListener("touchmove", onMove);
+    window.addEventListener("touchend", onUp);
+  });
+}
+
+function initSynthKnobs() {
+  KNOB_DEFS.forEach(def => mountKnob(`knob-${def.id}`, def));
+}
+
+function findAnyKnobDef(paramId) {
+  let def = KNOB_DEFS.find(d => d.id === paramId);
+  if (def) return def;
+  for (const key of Object.keys(PEDAL_META)) {
+    const found = PEDAL_META[key].knobs.find(k => k.id === paramId);
+    if (found) return found;
+  }
+  return null;
+}
+
+function updateKnobVisual(paramId) {
+  if (paramId === 38) {
+    const val = Number(paramValues[38] ?? -6.0);
+    const slider = document.getElementById("outputPadSlider");
+    const label = document.getElementById("outputPadLabel");
+    if (slider) slider.value = val;
+    if (label) label.textContent = (val >= 0 ? "+" : "") + val.toFixed(1) + " dB";
+    return;
+  }
+  const def = findAnyKnobDef(paramId);
+  if (def) {
+    const val = paramValues[paramId];
+    const svgEl = document.getElementById(`knob-svg-${paramId}`);
+    const valEl = document.getElementById(`knob-val-${paramId}`);
+    if (svgEl) svgEl.innerHTML = createKnobSvg(val, def.min, def.max);
+    if (valEl) valEl.textContent = formatKnobValue(def, val);
+  }
+}
+
+function onOutputPadInput(val) {
+  setParam(38, parseFloat(val));
+}
+
+// =========================================================================
+// PATCHBAY JACKS & SVG CABLES
+// =========================================================================
+function renderPatchbayJacks() {
+  const matrix = document.getElementById("patchbayMatrix");
+  matrix.innerHTML = "";
+  PATCH_JACKS.forEach(j => {
+    const isSrc = j.type === "src";
+    const isSelected = isSrc && pendingSourceJack === j.idx;
+    const isPlugged = !isSrc && activeCables.some(c => DestEnumToIndex(c.dest) === j.idx);
+    const cell = document.createElement("div");
+    cell.className = "jack-cell";
+    cell.innerHTML = `
+      <div class="jack-socket ${isSrc ? 'source-jack' : 'dest-jack'} ${isSelected ? 'selected-jack' : ''} ${isPlugged ? 'plugged-jack' : ''}"
+           id="jack-${j.type}-${j.idx}"
+           onclick="onJackClick('${j.type}', ${j.idx})"></div>
+      <div class="jack-title">${j.label}</div>
+      <div class="jack-sub">${j.sub}</div>`;
+    matrix.appendChild(cell);
+  });
+  requestAnimationFrame(drawPatchCablesSvg);
+}
+
+const SRC_ENUM_NAMES = [
+  "SignalOut","PhonesOut","MgTriangleOut","MgPulseOut","Eg1NormalOut",
+  "Eg1RevOut","Eg2RevOut","KeyCvOut","TrigOut","SampleHoldOut",
+  "MvcaOut","PinkNoiseOut","WhiteNoiseOut","ControlWheelOut","MomentarySwOut",
+  "EspAmpOut","EspBpfOut","EspFvCvOut","EspEnvOut","EspTrigOut"
+];
+const DST_ENUM_NAMES = [
+  "TotalExt","FreqExt","ExtAudioIn","HpfCutoffExt","LpfCutoffExt",
+  "VcaInitGain","Vco1And2CvIn","Vco2CvIn","Eg1TrigIn","MainTrigIn",
+  "SampleHoldIn","SampleHoldClock","MvcaIn","MvcaCtrl","EspSignalIn"
+];
+function SourceEnumToIndex(s) { return typeof s === "number" ? s : Math.max(0, SRC_ENUM_NAMES.indexOf(s)); }
+function DestEnumToIndex(d)   { return typeof d === "number" ? d : Math.max(0, DST_ENUM_NAMES.indexOf(d)); }
+
+function onJackClick(type, idx) {
+  if (type === "src") {
+    pendingSourceJack = (pendingSourceJack === idx) ? null : idx;
+    renderPatchbayJacks();
+  } else {
+    if (pendingSourceJack !== null) {
+      fetch("/api/patch/connect", {
+        method: "POST",
+        body: JSON.stringify({ source: pendingSourceJack, dest: idx })
+      });
+      activeCables = activeCables.filter(c => DestEnumToIndex(c.dest) !== idx);
+      activeCables.push({ source: SRC_ENUM_NAMES[pendingSourceJack], dest: DST_ENUM_NAMES[idx], color_idx: activeCables.length % 6 });
+      pendingSourceJack = null;
+      renderPatchbayJacks();
+    } else {
+      fetch("/api/patch/disconnect", {
+        method: "POST",
+        body: JSON.stringify({ dest: idx })
+      });
+      activeCables = activeCables.filter(c => DestEnumToIndex(c.dest) !== idx);
+      renderPatchbayJacks();
+    }
+  }
+}
+
+function clearAllCables() {
+  fetch("/api/patch/clear", { method: "POST" });
+  activeCables = [];
+  pendingSourceJack = null;
+  renderPatchbayJacks();
+}
+
+function drawPatchCablesSvg() {
+  const svg = document.getElementById("cableOverlaySvg");
+  const chassis = document.getElementById("synthView");
+  if (!svg || !chassis || chassis.style.display === "none") return;
+  const cRect = chassis.getBoundingClientRect();
+  const colors = ["#ff453a", "#ffd60a", "#32d74b", "#5ac8fa", "#bf5af2", "#ff9f0a"];
+  let html = "";
+  activeCables.forEach((c, i) => {
+    const sIdx = SourceEnumToIndex(c.source);
+    const dIdx = DestEnumToIndex(c.dest);
+    const sEl = document.getElementById(`jack-src-${sIdx}`);
+    const dEl = document.getElementById(`jack-dst-${dIdx}`);
+    if (!sEl || !dEl) return;
+    const sr = sEl.getBoundingClientRect();
+    const dr = dEl.getBoundingClientRect();
+    const x1 = sr.left - cRect.left + sr.width / 2;
+    const y1 = sr.top - cRect.top + sr.height / 2;
+    const x2 = dr.left - cRect.left + dr.width / 2;
+    const y2 = dr.top - cRect.top + dr.height / 2;
+    const sag = 55 + Math.hypot(x2 - x1, y2 - y1) * 0.25;
+    const cx = (x1 + x2) / 2;
+    const cy = Math.max(y1, y2) + sag;
+    const col = colors[(c.color_idx ?? i) % colors.length];
+    html += `<path d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}" fill="none" stroke="rgba(0,0,0,0.65)" stroke-width="7" stroke-linecap="round"/>`;
+    html += `<path d="M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}" fill="none" stroke="${col}" stroke-width="4.2" stroke-linecap="round" opacity="0.92"/>`;
+    html += `<circle cx="${x1}" cy="${x1 ? y1 : 0}" r="5" fill="${col}"/>`;
+    html += `<circle cx="${x2}" cy="${y2}" r="5" fill="${col}"/>`;
+  });
+  svg.innerHTML = html;
+}
+window.addEventListener("resize", drawPatchCablesSvg);
+
+// =========================================================================
+// TAB 2: 5 AMBIENT GUITAR STOMPBOXES (INCLUDING BOSS CE-2W STEREO CHORUS)
+// =========================================================================
+const PEDAL_META = {
+  BossCe2wChorus: {
+    title: "BOSS CE-2W / DC-2W",
+    sub: "Waza Stereo Chorus & Dimension Expander",
+    css: "stomp-ce2w",
+    enableParam: 140,
+    modeParam: 141,
+    modes: ["CE-2W Stereo BBD", "DC-2W Dimension D", "Tri-Stereo 3-Voice", "Juno-60 I+II Swirl"],
+    knobs: [
+      { id: 142, label: "RATE",         min: 0, max: 10, step: 0.1 },
+      { id: 143, label: "DEPTH",        min: 0, max: 10, step: 0.1 },
+      { id: 144, label: "STEREO WIDTH", min: 0, max: 10, step: 0.1 },
+      { id: 145, label: "BBD WARMTH",   min: 0, max: 10, step: 0.1 },
+      { id: 146, label: "MIX",          min: 0, max: 10, step: 0.1 }
+    ]
+  },
+  ZoomMs70Cdr: {
+    title: "ZOOM MS-70CDR",
+    sub: "MultiStomp Chorus / Delay / Reverb",
+    css: "stomp-zoom",
+    enableParam: 100,
+    modeParam: 101,
+    modes: ["Stereo Tri-Chorus", "Ice Shimmer +12st", "SpaceHole Nebula", "Lo-Fi Tape Drift"],
+    knobs: [
+      { id: 102, label: "DEPTH / PITCH", min: 0, max: 10, step: 0.1 },
+      { id: 103, label: "RATE / TIME",   min: 0, max: 10, step: 0.1 },
+      { id: 104, label: "TONE / HI-DMP", min: 0, max: 10, step: 0.1 },
+      { id: 105, label: "MIX",           min: 0, max: 10, step: 0.1 }
+    ]
+  },
+  BossDd8: {
+    title: "BOSS DD-8",
+    sub: "Digital Delay",
+    css: "stomp-dd8",
+    enableParam: 110,
+    modeParam: 111,
+    modes: ["WARM (Analog)", "REVERSE", "WARP (Swell)", "GLT (Glitch)", "TAPE (Space Echo)"],
+    knobs: [
+      { id: 112, label: "E.LEVEL",    min: 0, max: 10, step: 0.1 },
+      { id: 113, label: "F.BACK",     min: 0, max: 10, step: 0.1 },
+      { id: 114, label: "DELAY TIME", min: 0, max: 10, step: 0.1 },
+      { id: 115, label: "MOD / TONE", min: 0, max: 10, step: 0.1 }
+    ]
+  },
+  RedPandaParticle2: {
+    title: "RED PANDA PARTICLE 2",
+    sub: "Granular Delay / Pitch Shifter",
+    css: "stomp-particle",
+    enableParam: 120,
+    modeParam: 121,
+    modes: ["DENS (Cloud)", "LFO (Scrub)", "RND (Scatter)", "PITCH (+7/+12)", "REV (Reverse)"],
+    knobs: [
+      { id: 122, label: "BLEND",         min: 0, max: 10, step: 0.1 },
+      { id: 123, label: "CHOP / DENS",   min: 0, max: 10, step: 0.1 },
+      { id: 124, label: "DELAY / PITCH", min: 0, max: 10, step: 0.1 },
+      { id: 125, label: "PARAM (GRAIN)", min: 0, max: 10, step: 0.1 },
+      { id: 126, label: "FBACK",         min: 0, max: 10, step: 0.1 }
+    ]
+  },
+  StrymonCloudburst: {
+    title: "STRYMON CLOUDBURST",
+    sub: "Ambient Reverb + String Ensemble",
+    css: "stomp-cloudburst",
+    enableParam: 130,
+    modeParam: 131,
+    modes: ["ENSEMBLE: OFF", "ENSEMBLE: MP (Pad)", "ENSEMBLE: FORTE (Strings)"],
+    knobs: [
+      { id: 132, label: "DECAY",      min: 0, max: 10, step: 0.1 },
+      { id: 133, label: "ENSEMBLE",   min: 0, max: 10, step: 0.1 },
+      { id: 134, label: "MIX",        min: 0, max: 10, step: 0.1 },
+      { id: 135, label: "TONE",       min: 0, max: 10, step: 0.1 },
+      { id: 136, label: "PRE-DELAY",  min: 0, max: 10, step: 0.1 },
+      { id: 137, label: "MOD SPEED",  min: 0, max: 10, step: 0.1 }
+    ]
+  }
+};
+
+function renderPedalboard() {
+  const pillsEl = document.getElementById("chainOrderPills");
+  const stageEl = document.getElementById("pedalsStage");
+  if (!pillsEl || !stageEl) return;
+
+  let pillsHtml = `<span class="chain-node" style="color:var(--accent-gold);">MS-20s MONO OUT</span> <span>══►</span>`;
+  pedalChainOrder.forEach((pKey, slotIdx) => {
+    const meta = PEDAL_META[pKey];
+    if (!meta) return;
+    const on = (paramValues[meta.enableParam] ?? 1) >= 0.5;
+    pillsHtml += `<span class="chain-node ${on ? 'active-pedal' : ''}">${slotIdx + 1}. ${on ? '●' : '○'} ${meta.title}</span> <span>══►</span>`;
+  });
+  pillsHtml += `<span class="chain-node" style="color:var(--accent-cyan);">STEREO OUT / WAV REC</span>`;
+  pillsEl.innerHTML = pillsHtml;
+
+  stageEl.innerHTML = "";
+  pedalChainOrder.forEach((pKey, slotIdx) => {
+    const meta = PEDAL_META[pKey];
+    if (!meta) return;
+    const enabled = (paramValues[meta.enableParam] ?? 1) >= 0.5;
+    const modeIdx = Math.round(paramValues[meta.modeParam] ?? 0) % meta.modes.length;
+    const card = document.createElement("div");
+    card.className = `stompbox ${meta.css}`;
+
+    let modeSelectHtml = `<select onchange="setParam(${meta.modeParam}, parseFloat(this.value))" style="width:100%;margin:4px 0;">`;
+    meta.modes.forEach((mLabel, mi) => {
+      modeSelectHtml += `<option value="${mi}" ${mi === modeIdx ? 'selected' : ''}>${mLabel}</option>`;
+    });
+    modeSelectHtml += `</select>`;
+
+    const lcdHtml = pKey === "ZoomMs70Cdr"
+      ? `<div class="zoom-lcd">[MS-70CDR DSP]<br/>${meta.modes[modeIdx]}</div>`
+      : "";
+
+    let knobsGridHtml = `<div class="stomp-knobs-grid">`;
+    meta.knobs.forEach(k => {
+      knobsGridHtml += `<div id="pedal-knob-${k.id}"></div>`;
+    });
+    knobsGridHtml += `</div>`;
+
+    let footswitchHtml = "";
+    if (pKey === "BossDd8" || pKey === "BossCe2wChorus") {
+      const badge = pKey === "BossCe2wChorus" ? "WAZA CRAFT" : "BOSS";
+      footswitchHtml = `
+        <div class="stomp-footswitch-area">
+          <div class="boss-pad" onclick="togglePedal(${meta.enableParam})">
+            <div style="font-size:10px;color:#aaa;margin-bottom:4px;">PRESS TO STOMP (${enabled ? 'ON' : 'BYPASS'})</div>
+            <div style="font-size:16px;letter-spacing:3px;">${badge}</div>
+          </div>
+        </div>`;
+    } else if (pKey === "RedPandaParticle2") {
+      const frozen = (paramValues[127] ?? 0) >= 0.5;
+      footswitchHtml = `
+        <div class="stomp-footswitch-area">
+          <div style="text-align:center;">
+            <div style="font-size:10px;font-weight:800;margin-bottom:4px;color:${frozen ? '#5ac8fa' : '#999'};">${frozen ? '❄ FROZEN' : 'FREEZE'}</div>
+            <div class="footswitch-btn" onclick="setParam(127, ${frozen ? 0 : 1})">FREEZE</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:10px;font-weight:800;margin-bottom:4px;">${enabled ? '● ACTIVE' : '○ BYPASS'}</div>
+            <div class="footswitch-btn" onclick="togglePedal(${meta.enableParam})">ON/BYP</div>
+          </div>
+        </div>`;
+    } else {
+      footswitchHtml = `
+        <div class="stomp-footswitch-area">
+          <div style="text-align:center;">
+            <div style="font-size:10px;font-weight:800;margin-bottom:4px;">${enabled ? '● ENGAGED' : '○ BYPASSED'}</div>
+            <div class="footswitch-btn" onclick="togglePedal(${meta.enableParam})">STOMP</div>
+          </div>
+        </div>`;
+    }
+
+    card.innerHTML = `
+      <div>
+        <div class="stomp-top-bar">
+          <button class="order-btn" onclick="movePedalSlot(${slotIdx}, -1)" ${slotIdx === 0 ? 'disabled' : ''}>◀ Left</button>
+          <span style="font-size:11px;font-weight:900;"><span class="led-dot ${enabled ? 'on' : ''}"></span>SLOT #${slotIdx + 1}</span>
+          <button class="order-btn" onclick="movePedalSlot(${slotIdx}, 1)" ${slotIdx === 4 ? 'disabled' : ''}>Right ▶</button>
+        </div>
+        <div class="stomp-header">
+          <div class="stomp-title">${meta.title}</div>
+          <div class="stomp-subtitle">${meta.sub}</div>
+        </div>
+        ${lcdHtml}
+        ${modeSelectHtml}
+        ${knobsGridHtml}
+      </div>
+      ${footswitchHtml}
+    `;
+    stageEl.appendChild(card);
+
+    meta.knobs.forEach(k => mountKnob(`pedal-knob-${k.id}`, k));
+  });
+}
+
+let lastParamEditTime = {};
+let lastOrderEditTime = 0;
+let inFlightWrites = 0;
+
+function togglePedal(enableParamId) {
+  const cur = (paramValues[enableParamId] ?? 1) >= 0.5;
+  setParam(enableParamId, cur ? 0 : 1);
+}
+
+function movePedalSlot(slot, direction) {
+  const target = Math.max(0, Math.min(4, slot + direction));
+  if (target === slot) return;
+  lastOrderEditTime = Date.now();
+  const tmp = pedalChainOrder[slot];
+  pedalChainOrder[slot] = pedalChainOrder[target];
+  pedalChainOrder[target] = tmp;
+  renderPedalboard();
+  inFlightWrites++;
+  fetch(`/api/pedal/move?slot=${slot}&direction=${direction}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ slot, direction })
+  }).finally(() => {
+    inFlightWrites = Math.max(0, inFlightWrites - 1);
+  });
+}
+
+// =========================================================================
+// PARAMETER & SERVER SYNC
+// =========================================================================
+function setParam(paramId, value) {
+  const numVal = Number(value);
+  paramValues[paramId] = numVal;
+  lastParamEditTime[paramId] = Date.now();
+  updateKnobVisual(paramId);
+  // Rebuild pedal cards when a switch or mode selector is toggled
+  if ([100, 101, 110, 111, 120, 121, 127, 130, 131, 140, 141].includes(paramId)) {
+    renderPedalboard();
+  }
+  inFlightWrites++;
+  fetch(`/api/param?param_id=${paramId}&value=${numVal}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ param_id: paramId, value: numVal })
+  })
+    .catch(() => {})
+    .finally(() => {
+      inFlightWrites = Math.max(0, inFlightWrites - 1);
+    });
+}
+
+function switchTab(which) {
+  const sView = document.getElementById("synthView");
+  const pView = document.getElementById("pedalsView");
+  document.getElementById("tabSynthBtn").classList.toggle("active", which === "synth");
+  document.getElementById("tabPedalsBtn").classList.toggle("active", which === "pedals");
+  if (which === "synth") {
+    sView.style.display = "grid";
+    pView.style.display = "none";
+    requestAnimationFrame(drawPatchCablesSvg);
+  } else {
+    sView.style.display = "none";
+    pView.style.display = "block";
+    renderPedalboard();
+  }
+}
+
+function loadPreset(index) {
+  fetch("/api/preset", {
+    method: "POST",
+    body: JSON.stringify({ index: parseInt(index, 10) })
+  }).then(() => pollServerState());
+}
+
+function toggleDrone() {
+  const next = (paramValues[37] ?? 0) >= 0.5 ? 0 : 1;
+  setParam(37, next);
+  const btn = document.getElementById("droneBtn");
+  btn.textContent = next ? "DRONE GATE: ON" : "DRONE GATE: OFF";
+  btn.classList.toggle("active-drone", !!next);
+}
+
+// =========================================================================
+// IN-BROWSER WEBAUDIO POLYBLEP + KORG35 + AMBIENT PEDALS ENGINE (OPTIONAL)
+// =========================================================================
+let audioCtx = null;
+let browserAudioEnabled = false;
+let activeNote = 60;
+let noteGate = false;
+let vco1Phase = 0, vco2Phase = 0.23, mgPhase = 0;
+let eg1Level = 0, eg2Level = 0;
+let hpfS1 = 0, hpfS2 = 0, lpfS1 = 0, lpfS2 = 0;
+let delayBufL = new Float32Array(96000);
+let delayBufR = new Float32Array(96000);
+let delayPos = 0;
+let revBufs = [new Float32Array(2903), new Float32Array(3571), new Float32Array(4409), new Float32Array(5417)];
+let revPos = [0, 0, 0, 0];
+let browserRecChunksL = [];
+let browserRecChunksR = [];
+let isRecordingState = false;
+
+function ensureBrowserAudio() {
+  if (audioCtx || !browserAudioEnabled) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  audioCtx = new AC();
+  const node = audioCtx.createScriptProcessor(512, 0, 2);
+  node.onaudioprocess = (e) => {
+    const outL = e.outputBuffer.getChannelData(0);
+    const outR = e.outputBuffer.getChannelData(1);
+    const sr = audioCtx.sampleRate;
+    if (!browserAudioEnabled) {
+      outL.fill(0); outR.fill(0);
+      return;
+    }
+    const gate = noteGate || (paramValues[37] >= 0.5);
+    const baseHz = 440 * Math.pow(2, (activeNote - 69) / 12);
+    const scale1 = [0.25, 0.5, 1.0, 2.0][Math.round(paramValues[2] ?? 2) % 4];
+    const scale2 = [0.5, 1.0, 2.0, 4.0][Math.round(paramValues[6] ?? 1) % 4];
+    const vco2Ratio = Math.pow(2, (((paramValues[5] ?? 0) / 5) * 12) / 12);
+    const tuneRatio = Math.pow(2, (((paramValues[7] ?? 0) / 5)) / 12);
+
+    const mgHz = 0.1 + Math.pow((paramValues[21] ?? 4.5) / 10, 2) * 28.0;
+    const attAlpha = 1 - Math.exp(-1 / ((0.002 + Math.pow((paramValues[26] ?? 0.3) / 10, 2.1) * 2.5) * sr));
+    const decAlpha = 1 - Math.exp(-1 / ((0.004 + Math.pow((paramValues[27] ?? 4.0) / 10, 2.1) * 3.0) * sr));
+    const relAlpha = 1 - Math.exp(-1 / ((0.004 + Math.pow((paramValues[29] ?? 3.5) / 10, 2.1) * 3.5) * sr));
+    const susLvl = (paramValues[28] ?? 7.5) / 10;
+
+    for (let i = 0; i < outL.length; i++) {
+      mgPhase = (mgPhase + mgHz / sr) % 1.0;
+      const mgTri = mgPhase < 0.5 ? (-1 + 4 * mgPhase) : (3 - 4 * mgPhase);
+      if (gate) {
+        eg1Level += attAlpha * (1 - eg1Level);
+        eg2Level += (eg2Level < 0.98 ? attAlpha * (1.05 - eg2Level) : decAlpha * (susLvl - eg2Level));
+      } else {
+        eg1Level += relAlpha * (0 - eg1Level);
+        eg2Level += relAlpha * (0 - eg2Level);
+      }
+
+      const fmOct = ((paramValues[10] ?? 0) / 10) * mgTri * 0.6 + ((paramValues[11] ?? 0) / 10) * eg1Level * 1.2;
+      const f1 = baseHz * scale1 * tuneRatio * Math.pow(2, fmOct);
+      const f2 = baseHz * scale2 * vco2Ratio * tuneRatio * Math.pow(2, fmOct);
+      vco1Phase = (vco1Phase + f1 / sr) % 1.0;
+      vco2Phase = (vco2Phase + f2 / sr) % 1.0;
+
+      const w1 = Math.round(paramValues[0] ?? 1) % 4;
+      const pw = 0.5 + ((paramValues[1] ?? 0) / 10) * 0.42;
+      const sq1 = vco1Phase < pw ? 1 : -1;
+      let s1 = w1 === 0 ? (1 - 4 * Math.abs(vco1Phase - 0.5)) : w1 === 1 ? (2 * vco1Phase - 1) : w1 === 2 ? sq1 : (Math.random() * 2 - 1);
+
+      const w2 = Math.round(paramValues[4] ?? 0) % 4;
+      const sq2 = vco2Phase < (w2 === 2 ? 0.18 : 0.5) ? 1 : -1;
+      let s2 = w2 === 0 ? (2 * vco2Phase - 1) : w2 === 3 ? (sq1 * sq2) : sq2;
+
+      const mix = (s1 * ((paramValues[8] ?? 10) / 10) + s2 * ((paramValues[9] ?? 8.5) / 10)) * 0.45;
+
+      // Dual KORG35 TPT HPF -> LPF
+      const hpfOct = ((paramValues[12] ?? 0.5) / 10) * 9.2 + ((paramValues[15] ?? 0) / 10) * eg2Level * 4.0;
+      const hpfFc = Math.min(sr * 0.42, 16 * Math.pow(2, Math.max(0, hpfOct)));
+      const gh = Math.tan(Math.PI * hpfFc / sr);
+      const Gh = gh / (1 + gh);
+      const kh = ((paramValues[13] ?? 1.5) / 10) * 1.85;
+      const uh = Math.tanh(mix + kh * Math.tanh(hpfS1 - hpfS2));
+      const vh1 = Gh * (uh - hpfS1); const yh1 = vh1 + hpfS1; hpfS1 = yh1 + vh1;
+      const vh2 = Gh * (yh1 - hpfS2); const yh2 = vh2 + hpfS2; hpfS2 = yh2 + vh2;
+      const hpOut = uh - 2 * yh1 + yh2;
+
+      const lpfOct = ((paramValues[16] ?? 6.8) / 10) * 9.5 + ((paramValues[18] ?? 0) / 10) * mgTri * 2.5 + ((paramValues[19] ?? 4.5) / 10) * eg2Level * 5.0;
+      const lpfFc = Math.min(sr * 0.44, 24 * Math.pow(2, Math.max(0, lpfOct)));
+      const gl = Math.tan(Math.PI * lpfFc / sr);
+      const Gl = gl / (1 + gl);
+      const kl = ((paramValues[17] ?? 3.5) / 10) * 1.92;
+      const ul = Math.tanh(hpOut + kl * Math.tanh(lpfS1 - lpfS2));
+      const vl1 = Gl * (ul - lpfS1); const yl1 = vl1 + lpfS1; lpfS1 = yl1 + vl1;
+      const vl2 = Gl * (yl1 - lpfS2); const yl2 = vl2 + lpfS2; lpfS2 = yl2 + vl2;
+
+      const volNorm = Math.max(0, Math.min(1, (paramValues[30] ?? 6.5) / 10));
+      const volGain = Math.pow(volNorm, 1.85) * 0.65;
+      let sig = yl2 * eg2Level * volGain;
+      let L = sig, R = sig;
+
+      // BOSS CE-2W / DC-2W Stereo Chorus & Dimension Expander (Mono -> True Wide Stereo)
+      if ((paramValues[140] ?? 1) >= 0.5) {
+        const cDepth = (paramValues[143] ?? 7.4) / 10;
+        const cWidth = (paramValues[144] ?? 9.2) / 10;
+        const cMix = (paramValues[146] ?? 6.8) / 10;
+        const cModL = Math.floor((0.0072 + 0.005 * cDepth * Math.sin(2 * Math.PI * mgPhase * 0.7)) * sr);
+        const cModR = Math.floor((0.0098 + 0.006 * cWidth - 0.005 * cDepth * Math.sin(2 * Math.PI * mgPhase * 0.7)) * sr);
+        const idxL = (delayPos + delayBufL.length - cModL) % delayBufL.length;
+        const idxR = (delayPos + delayBufR.length - cModR) % delayBufR.length;
+        const wL = delayBufL[idxL];
+        const wR = delayBufR[idxR] * (1 - 0.45 * cWidth) - wL * (0.45 * cWidth);
+        L = L * (1 - cMix * 0.4) + wL * cMix * 1.25;
+        R = R * (1 - cMix * 0.4) + wR * cMix * 1.25;
+      }
+
+      // Zoom MS-70CDR Chorus/Shimmer
+      if ((paramValues[100] ?? 1) >= 0.5) {
+        const zDepth = (paramValues[102] ?? 7.5) / 10;
+        const zMix = (paramValues[105] ?? 6.2) / 10;
+        const modD = Math.floor((0.008 + 0.006 * Math.sin(2 * Math.PI * mgPhase)) * sr);
+        const zIdx = (delayPos + delayBufL.length - modD) % delayBufL.length;
+        L = L * (1 - zMix * 0.5) + delayBufL[zIdx] * zMix * (1 + zDepth * 0.4);
+        R = R * (1 - zMix * 0.5) - delayBufR[zIdx] * zMix * (1 + zDepth * 0.4);
+      }
+
+      // Red Panda Particle 2 Granular Chop/Pitch
+      if ((paramValues[120] ?? 1) >= 0.5) {
+        const pBlend = (paramValues[122] ?? 5.8) / 10;
+        const gIdx = (delayPos + delayBufL.length - Math.floor((0.04 + 0.12 * Math.abs(mgTri)) * sr)) % delayBufL.length;
+        L = L * (1 - pBlend * 0.6) + delayBufR[gIdx] * pBlend * 1.25;
+        R = R * (1 - pBlend * 0.6) + delayBufL[gIdx] * pBlend * 1.25;
+      }
+
+      // Boss DD-8 Stereo Delay
+      const delSamples = Math.floor((0.05 + ((paramValues[114] ?? 5.5) / 10) * 0.65) * sr);
+      const rIdxL = (delayPos + delayBufL.length - delSamples) % delayBufL.length;
+      const rIdxR = (delayPos + delayBufR.length - Math.floor(delSamples * 0.75)) % delayBufR.length;
+      const dL = delayBufL[rIdxL], dR = delayBufR[rIdxR];
+      const dd8On = (paramValues[110] ?? 1) >= 0.5;
+      const fb = ((paramValues[113] ?? 6.8) / 10) * 0.85;
+      if (!((paramValues[127] ?? 0) >= 0.5)) {
+        delayBufL[delayPos] = Math.tanh(L + (dd8On ? dR * fb : 0));
+        delayBufR[delayPos] = Math.tanh(R + (dd8On ? dL * fb : 0));
+        delayPos = (delayPos + 1) % delayBufL.length;
+      }
+      if (dd8On) {
+        const mixD = (paramValues[112] ?? 6.5) / 10;
+        L = L * (1 - mixD * 0.35) + dL * mixD * 1.2;
+        R = R * (1 - mixD * 0.35) + dR * mixD * 1.2;
+      }
+
+      // Strymon Cloudburst Tank + Ensemble
+      if ((paramValues[130] ?? 1) >= 0.5) {
+        const r0 = revBufs[0][revPos[0]], r1 = revBufs[1][revPos[1]], r2 = revBufs[2][revPos[2]], r3 = revBufs[3][revPos[3]];
+        const sum = (r0 + r1 + r2 + r3) * 0.5;
+        const rfb = 0.78 + ((paramValues[132] ?? 8.4) / 10) * 0.20;
+        const ensBoost = 1 + ((paramValues[133] ?? 7.8) / 10) * 0.8;
+        revBufs[0][revPos[0]] = Math.tanh((sum - r0) * rfb + L * 0.45 * ensBoost);
+        revBufs[1][revPos[1]] = Math.tanh((sum - r1) * rfb + R * 0.45 * ensBoost);
+        revBufs[2][revPos[2]] = Math.tanh((sum - r2) * rfb - L * 0.45 * ensBoost);
+        revBufs[3][revPos[3]] = Math.tanh((sum - r3) * rfb - R * 0.45 * ensBoost);
+        for (let k = 0; k < 4; k++) revPos[k] = (revPos[k] + 1) % revBufs[k].length;
+        const cMix = (paramValues[134] ?? 6.8) / 10;
+        L = L * (1 - cMix * 0.55) + (r0 + r2) * 0.75 * cMix;
+        R = R * (1 - cMix * 0.55) + (r1 + r3) * 0.75 * cMix;
+      }
+
+      const padGain = Math.pow(10, (paramValues[38] ?? -6.0) / 20);
+      outL[i] = Math.tanh(L * padGain);
+      outR[i] = Math.tanh(R * padGain);
+    }
+
+    if (isRecordingState) {
+      browserRecChunksL.push(new Float32Array(outL));
+      browserRecChunksR.push(new Float32Array(outR));
+    }
+  };
+  node.connect(audioCtx.destination);
+}
+
+function toggleBrowserWebAudio() {
+  browserAudioEnabled = !browserAudioEnabled;
+  if (browserAudioEnabled) ensureBrowserAudio();
+  document.getElementById("webAudioBtn").textContent = browserAudioEnabled
+    ? "🔈 BROWSER AUDIO: ON"
+    : "🔇 BROWSER AUDIO: OFF (Using Rust CoreAudio)";
+}
+
+function sendMidiEvent(status, data1, data2) {
+  if (browserAudioEnabled) {
+    ensureBrowserAudio();
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  }
+  const cmd = status & 0xF0;
+  if (cmd === 0x90 && data2 > 0) {
+    activeNote = data1;
+    noteGate = true;
+  } else if (cmd === 0x80 || (cmd === 0x90 && data2 === 0)) {
+    if (activeNote === data1) noteGate = false;
+  }
+  fetch("/api/midi", {
+    method: "POST",
+    body: JSON.stringify({ status, data1, data2 })
+  }).catch(() => {});
+}
+
+// Computer Keyboard Note Triggering (Z..M / Q..U) without drawing a piano keyboard on panel
+const KEY_TO_NOTE = {
+  'z': 48, 's': 49, 'x': 50, 'd': 51, 'c': 52, 'v': 53, 'g': 54, 'b': 55, 'h': 56, 'n': 57, 'j': 58, 'm': 59,
+  'q': 60, '2': 61, 'w': 62, '3': 63, 'e': 64, 'r': 65, '5': 66, 't': 67, '6': 68, 'y': 69, '7': 70, 'u': 71, 'i': 72
+};
+const pressedKeys = new Set();
+window.addEventListener("keydown", (e) => {
+  if (e.repeat || e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+  const k = e.key.toLowerCase();
+  if (KEY_TO_NOTE[k] !== undefined && !pressedKeys.has(k)) {
+    pressedKeys.add(k);
+    sendMidiEvent(0x90, KEY_TO_NOTE[k], 110);
+  }
+});
+window.addEventListener("keyup", (e) => {
+  const k = e.key.toLowerCase();
+  if (KEY_TO_NOTE[k] !== undefined) {
+    pressedKeys.delete(k);
+    sendMidiEvent(0x80, KEY_TO_NOTE[k], 0);
+  }
+});
+
+// WebMIDI API Support
+if (navigator.requestMIDIAccess) {
+  navigator.requestMIDIAccess().then((midi) => {
+    const sel = document.getElementById("midiSelect");
+    const attachInputs = () => {
+      for (const input of midi.inputs.values()) {
+        if (![...sel.options].some(o => o.text === input.name)) {
+          const opt = document.createElement("option");
+          opt.value = input.id;
+          opt.textContent = input.name || "USB MIDI Controller";
+          sel.appendChild(opt);
+        }
+        input.onmidimessage = (msg) => {
+          const [st, d1, d2] = msg.data;
+          sendMidiEvent(st || 0, d1 || 0, d2 || 0);
+        };
+      }
+    };
+    attachInputs();
+    midi.onstatechange = attachInputs;
+  }).catch(() => {});
+}
+
+// Session Recording (Native Rust WAV + Browser WAV fallback)
+function toggleRecording() {
+  if (!isRecordingState) {
+    browserRecChunksL = [];
+    browserRecChunksR = [];
+    isRecordingState = true;
+  } else {
+    isRecordingState = false;
+  }
+  fetch("/api/record/toggle", { method: "POST" }).then(() => pollServerState());
+}
+
+// Poll server state for bi-directional TUI <-> Web UI sync & oscilloscope
+function pollServerState() {
+  if (inFlightWrites > 0) return;
+  fetch("/api/state").then(r => r.json()).then(st => {
+    if (!st || !st.synth || inFlightWrites > 0) return;
+    const now = Date.now();
+    const s = st.synth;
+    const mapWaves1 = { Triangle: 0, Sawtooth: 1, Pulse: 2, WhiteNoise: 3 };
+    const mapScales1 = { Feet32: 0, Feet16: 1, Feet8: 2, Feet4: 3 };
+    const mapWaves2 = { Sawtooth: 0, Square: 1, NarrowPulse: 2, RingMod: 3 };
+    const mapScales2 = { Feet16: 0, Feet8: 1, Feet4: 2, Feet2: 3 };
+    const syncPairs = [
+      [0, mapWaves1[s.vco1_waveform] ?? 1], [1, s.vco1_pw], [2, mapScales1[s.vco1_scale] ?? 2], [3, s.portamento_time],
+      [4, mapWaves2[s.vco2_waveform] ?? 0], [5, s.vco2_pitch], [6, mapScales2[s.vco2_scale] ?? 1], [7, s.master_tune],
+      [8, s.vco1_level], [9, s.vco2_level], [10, s.fm_mg_text], [11, s.fm_eg1_ext],
+      [12, s.hpf_cutoff], [13, s.hpf_peak], [14, s.hpf_mg_text], [15, s.hpf_eg2_ext],
+      [16, s.lpf_cutoff], [17, s.lpf_peak], [18, s.lpf_mg_text], [19, s.lpf_eg2_ext],
+      [20, s.mg_waveform], [21, s.mg_frequency], [22, s.eg1_delay], [23, s.eg1_attack], [24, s.eg1_release],
+      [25, s.eg2_hold], [26, s.eg2_attack], [27, s.eg2_decay], [28, s.eg2_sustain], [29, s.eg2_release],
+      [30, s.master_volume], [31, s.esp_signal_level], [32, s.esp_low_cut], [33, s.esp_high_cut], [34, s.esp_cv_adjust], [35, s.esp_threshold],
+      [37, s.drone_gate ? 1 : 0], [38, s.output_pad_db ?? -6.0]
+    ];
+
+    if (st.pedals) {
+      const p = st.pedals;
+      const mapChorus = { Ce2AnalogStereo: 0, DimensionCDc2w: 1, TriStereo3Voice: 2, JunoSwirl: 3 };
+      const mapZoom = { CoronaTriChorus: 0, IceShimmerDelay: 1, SpaceHoleReverb: 2, LoFiTapeVibrato: 3 };
+      const mapDd8  = { Warm: 0, Reverse: 1, Warp: 2, Glitch: 3, Tape: 4 };
+      const mapPart = { Density: 0, LfoTime: 1, RandomPitch: 2, PitchShift: 3, ReverseGrains: 4 };
+      const mapCb   = { Off: 0, MezzoPiano: 1, Forte: 2 };
+      if (p.chorus) {
+        syncPairs.push([140, p.chorus.enabled ? 1 : 0], [141, mapChorus[p.chorus.mode] ?? 0], [142, p.chorus.rate], [143, p.chorus.depth], [144, p.chorus.stereo_width], [145, p.chorus.warmth], [146, p.chorus.mix]);
+      }
+      if (p.zoom) {
+        syncPairs.push([100, p.zoom.enabled ? 1 : 0], [101, mapZoom[p.zoom.mode] ?? 0], [102, p.zoom.depth], [103, p.zoom.rate], [104, p.zoom.tone], [105, p.zoom.mix]);
+      }
+      if (p.dd8) {
+        syncPairs.push([110, p.dd8.enabled ? 1 : 0], [111, mapDd8[p.dd8.mode] ?? 0], [112, p.dd8.effect_level], [113, p.dd8.feedback], [114, p.dd8.delay_time], [115, p.dd8.mod_depth]);
+      }
+      if (p.particle) {
+        syncPairs.push([120, p.particle.enabled ? 1 : 0], [121, mapPart[p.particle.mode] ?? 0], [122, p.particle.blend], [123, p.particle.chop], [124, p.particle.pitch_detune], [125, p.particle.grain_size], [126, p.particle.feedback], [127, p.particle.freeze ? 1 : 0]);
+      }
+      if (p.cloudburst) {
+        syncPairs.push([130, p.cloudburst.enabled ? 1 : 0], [131, mapCb[p.cloudburst.ensemble_mode] ?? 1], [132, p.cloudburst.decay], [133, p.cloudburst.ensemble], [134, p.cloudburst.mix], [135, p.cloudburst.tone], [136, p.cloudburst.pre_delay], [137, p.cloudburst.mod_speed]);
+      }
+    }
+
+    let pedalSwitchChanged = false;
+    syncPairs.forEach(([id, v]) => {
+      if (now - (lastParamEditTime[id] || 0) < 900) return;
+      if (Math.abs((paramValues[id] ?? 0) - v) > 0.01) {
+        paramValues[id] = v;
+        updateKnobVisual(id);
+        if ([100, 101, 110, 111, 120, 121, 127, 130, 131, 140, 141].includes(id)) {
+          pedalSwitchChanged = true;
+        }
+      }
+    });
+
+    if (st.pedals && Array.isArray(st.pedals.chain_order) && (now - lastOrderEditTime >= 900)) {
+      const newOrder = st.pedals.chain_order.join(",");
+      if (newOrder !== pedalChainOrder.join(",")) {
+        pedalChainOrder = st.pedals.chain_order;
+        pedalSwitchChanged = true;
+      }
+    }
+    if (pedalSwitchChanged) {
+      renderPedalboard();
+    }
+
+    if (Array.isArray(st.cables) && st.cables.length !== activeCables.length) {
+      activeCables = st.cables;
+      renderPatchbayJacks();
+    }
+
+    document.getElementById("espPeakLed").classList.toggle("on", !!st.esp_peak_led);
+    document.getElementById("espTrigLed").classList.toggle("on", !!st.esp_trig_led);
+
+    const recBtn = document.getElementById("recBtn");
+    isRecordingState = !!st.is_recording;
+    if (st.is_recording) {
+      recBtn.classList.add("recording");
+      recBtn.textContent = `■ STOP REC (${Number(st.rec_duration_sec || 0).toFixed(1)}s)`;
+    } else {
+      recBtn.classList.remove("recording");
+      recBtn.textContent = "● REC SESSION WAV";
+    }
+    const dl = document.getElementById("downloadWavLink");
+    if (st.has_wav_download) dl.style.display = "inline";
+
+    if (Array.isArray(st.scope)) drawScope(st.scope);
+  }).catch(() => {});
+}
+
+function drawScope(samples) {
+  const c = document.getElementById("scopeCanvas");
+  if (!c) return;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#08120c";
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.strokeStyle = "#32d74b";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < samples.length; i++) {
+    const x = (i / (samples.length - 1)) * c.width;
+    const y = c.height / 2 - samples[i] * (c.height * 0.42);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+// Initialize UI
+initSynthKnobs();
+renderPatchbayJacks();
+renderPedalboard();
+setInterval(pollServerState, 250);
+</script>
+</body>
+</html>

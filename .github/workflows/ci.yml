@@ -1,0 +1,38 @@
+name: Rust DSP, TUI & DAW Plugin CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-and-test:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run DSP & Plugin unit tests
+        run: cargo test --workspace --verbose
+
+      - name: Build release binaries (TUI + Web UI + Plugin)
+        run: cargo build --workspace --release
+
+      - name: Bundle VST3 & CLAP DAW plugins
+        run: cargo run --release -p ms20-plugin --bin bundle-plugin

@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    "ms20-core",
+    "ms20-tui",
+    "ms20-wasm",
+    "ms20-plugin",
+    "vendor/nih_plug",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["KaloKorg DSP Team"]
+description = "KaloKorg M20s - Faithful Korg MS-20 Mini Software Synthesizer & Ambient Guitar Pedalboard"

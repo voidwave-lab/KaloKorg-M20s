@@ -1,0 +1,9 @@
+[package]
+name = "nih_plug"
+version = "0.1.0"
+edition = "2021"
+description = "Offline-compatible NIH-plug API & CLAP/VST3 C-ABI export implementation for KaloKorg M20s"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

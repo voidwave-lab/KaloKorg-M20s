@@ -1,0 +1,25 @@
+# Rust / Cargo build artifacts & DAW plugin bundle outputs
+/target/
+**/*.rs.bk
+*.pdb
+
+# User session audio recordings (keep directory via .gitkeep, ignore recorded WAV files)
+/recordings/*.wav
+
+# macOS system metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows / Linux system metadata
+Thumbs.db
+Desktop.ini
+*~
+
+# Editor & IDE directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*.iml

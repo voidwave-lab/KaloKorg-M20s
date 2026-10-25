@@ -1,5 +1,7 @@
 # KaloKorg M20s
 
+[![KaloKorg M20s CI (DSP, TUI, Web UI & VST3/CLAP Plugin)](https://github.com/voidwave-lab/KaloKorg-M20s/actions/workflows/ci.yml/badge.svg)](https://github.com/voidwave-lab/KaloKorg-M20s/actions/workflows/ci.yml)
+
 **KaloKorg M20s** is a component-modeled software synthesizer clone of the **Korg MS-20 Mini** paired with a reorderable **5-Pedal Ambient & Experimental Guitar Pedalboard**. Written in Rust, it provides three ways to play and produce:
 1. **Interactive Terminal User Interface (TUI)** (`ratatui` + `crossterm`)
 2. **Real-Time Synced Web Interface** (vintage MS-20 front panel with SVG patch cables + 5 visual guitar stompboxes)

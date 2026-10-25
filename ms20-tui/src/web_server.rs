@@ -238,10 +238,10 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SharedSynthState>>) -> 
         ("POST", "/api/patch/connect") => {
             if let Ok(req) = serde_json::from_str::<PatchConnectReq>(body) {
                 if let Ok(mut guard) = state.lock() {
-                    guard
-                        .engine
-                        .patchbay
-                        .connect(PatchSource::from_index(req.source), PatchDest::from_index(req.dest));
+                    guard.engine.connect_patch_cable(
+                        PatchSource::from_index(req.source),
+                        PatchDest::from_index(req.dest),
+                    );
                 }
             }
             send_response(&mut stream, "200 OK", "application/json", b"{\"ok\":true}")
@@ -251,15 +251,14 @@ fn handle_client(mut stream: TcpStream, state: Arc<Mutex<SharedSynthState>>) -> 
                 if let Ok(mut guard) = state.lock() {
                     guard
                         .engine
-                        .patchbay
-                        .disconnect_dest(PatchDest::from_index(req.dest));
+                        .disconnect_patch_cable(PatchDest::from_index(req.dest));
                 }
             }
             send_response(&mut stream, "200 OK", "application/json", b"{\"ok\":true}")
         }
         ("POST", "/api/patch/clear") => {
             if let Ok(mut guard) = state.lock() {
-                guard.engine.patchbay.clear_all();
+                guard.engine.clear_patch_cables();
             }
             send_response(&mut stream, "200 OK", "application/json", b"{\"ok\":true}")
         }

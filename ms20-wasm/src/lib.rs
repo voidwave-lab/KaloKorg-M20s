@@ -35,8 +35,7 @@ impl WasmMs20Processor {
 
     pub fn connect_patch(&mut self, src: usize, dst: usize) {
         self.engine
-            .patchbay
-            .connect(PatchSource::from_index(src), PatchDest::from_index(dst));
+            .connect_patch_cable(PatchSource::from_index(src), PatchDest::from_index(dst));
     }
 
     pub fn load_factory_preset(&mut self, idx: usize) {

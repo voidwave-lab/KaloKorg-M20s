@@ -465,26 +465,49 @@ fn render_right_patchbay_and_esp(
         ),
     ]));
 
-    // Render Source Jacks (Left column) & Destination Jacks (Right column) side-by-side
-    let max_rows = 12usize;
-    for r in 0..max_rows {
-        let src_opt = PatchSource::ALL.get(r);
-        let dst_opt = PatchDest::ALL.get(r);
+    // Render Source Jacks (Left column, all 20) & Destination Jacks (Right column, all 15)
+    // using a 12-row scrolling viewport that tracks the selected source and destination indices.
+    let visible_rows = 12usize;
+    let src_offset = if app.selected_patch_src >= visible_rows {
+        (app.selected_patch_src + 1 - visible_rows).min(PatchSource::ALL.len() - visible_rows)
+    } else {
+        0
+    };
+    let dst_offset = if app.selected_patch_dst >= visible_rows {
+        (app.selected_patch_dst + 1 - visible_rows).min(PatchDest::ALL.len() - visible_rows)
+    } else {
+        0
+    };
+
+    for row in 0..visible_rows {
+        let src_idx = src_offset + row;
+        let dst_idx = dst_offset + row;
+        let src_opt = PatchSource::ALL.get(src_idx);
+        let dst_opt = PatchDest::ALL.get(dst_idx);
 
         let src_span = if let Some(src) = src_opt {
-            let is_sel = focus_patch && app.selected_patch_src == r;
+            let is_sel = focus_patch && app.selected_patch_src == src_idx;
+            let is_used = state.engine.patchbay.is_source_patched(*src);
             let style = if is_sel {
-                Style::default().fg(Color::Black).bg(Color::LightGreen).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Black)
+                    .bg(Color::LightGreen)
+                    .add_modifier(Modifier::BOLD)
+            } else if is_used {
+                Style::default()
+                    .fg(Color::LightGreen)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default().fg(Color::Green)
             };
-            Span::styled(format!(" ◯ {:<16}", src.label()), style)
+            let icon = if is_used { "◉" } else { "◯" };
+            Span::styled(format!(" {} {:<16}", icon, src.label()), style)
         } else {
             Span::raw(format!("   {:<16}", ""))
         };
 
         let dst_span = if let Some(dst) = dst_opt {
-            let is_sel = focus_patch && app.selected_patch_dst == r;
+            let is_sel = focus_patch && app.selected_patch_dst == dst_idx;
             let plugged = state
                 .engine
                 .patchbay
@@ -497,9 +520,14 @@ fn render_right_patchbay_and_esp(
                 format!("◯ {:<15}", dst.label())
             };
             let style = if is_sel {
-                Style::default().fg(Color::Black).bg(Color::Yellow).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::Black)
+                    .bg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
             } else if plugged.is_some() {
-                Style::default().fg(Color::LightYellow).add_modifier(Modifier::BOLD)
+                Style::default()
+                    .fg(Color::LightYellow)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default().fg(Color::White)
             };

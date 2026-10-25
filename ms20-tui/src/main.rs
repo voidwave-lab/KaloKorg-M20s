@@ -409,9 +409,15 @@ fn handle_synth_tab_key(app: &mut TuiApp, state: &Arc<Mutex<SharedSynthState>>, 
                     app.connect_selected_patch(&mut guard);
                 }
             }
-            KeyCode::Backspace | KeyCode::Delete => {
+            KeyCode::Backspace | KeyCode::Delete | KeyCode::Char('x') | KeyCode::Char('X') => {
                 if let Ok(mut guard) = state.lock() {
                     app.disconnect_selected_patch(&mut guard);
+                }
+            }
+            KeyCode::Char('u') | KeyCode::Char('U') => {
+                if let Ok(mut guard) = state.lock() {
+                    guard.engine.clear_patch_cables();
+                    app.status_banner = "Cleared all 3.5mm patchbay cables".to_string();
                 }
             }
             _ => {}

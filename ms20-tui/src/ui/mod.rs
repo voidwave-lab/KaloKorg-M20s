@@ -118,13 +118,13 @@ impl TuiApp {
     pub fn connect_selected_patch(&mut self, state: &mut SharedSynthState) {
         let src = PatchSource::from_index(self.selected_patch_src);
         let dst = PatchDest::from_index(self.selected_patch_dst);
-        state.engine.patchbay.connect(src, dst);
+        state.engine.connect_patch_cable(src, dst);
         self.status_banner = format!("Patched 3.5mm cable: [{}] ---> [{}]", src.label(), dst.label());
     }
 
     pub fn disconnect_selected_patch(&mut self, state: &mut SharedSynthState) {
         let dst = PatchDest::from_index(self.selected_patch_dst);
-        state.engine.patchbay.disconnect_dest(dst);
+        state.engine.disconnect_patch_cable(dst);
         self.status_banner = format!("Unplugged cable from [{}]", dst.label());
     }
 }

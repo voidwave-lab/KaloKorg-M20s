@@ -48,9 +48,28 @@ impl Default for Eg1Dar {
 
 impl Eg1Dar {
     #[inline]
+    pub fn retrigger(&mut self) {
+        self.prev_gate = false;
+        self.stage = Eg1Stage::Idle;
+    }
+
+    #[inline]
     pub fn process(
         &mut self,
         gate: bool,
+        delay_knob: f32,
+        attack_knob: f32,
+        release_knob: f32,
+        sample_rate: f32,
+    ) -> (f32, f32) {
+        self.process_with_mode(gate, false, delay_knob, attack_knob, release_knob, sample_rate)
+    }
+
+    #[inline]
+    pub fn process_with_mode(
+        &mut self,
+        gate: bool,
+        auto_cycle_when_held: bool,
         delay_knob: f32,
         attack_knob: f32,
         release_knob: f32,
@@ -72,6 +91,15 @@ impl Eg1Dar {
         match self.stage {
             Eg1Stage::Idle => {
                 self.level = 0.0;
+                if gate && auto_cycle_when_held {
+                    let delay_sec = knob_to_time_sec(delay_knob);
+                    self.delay_remaining_samples = (delay_sec * sample_rate) as u32;
+                    self.stage = if self.delay_remaining_samples > 0 {
+                        Eg1Stage::Delay
+                    } else {
+                        Eg1Stage::Attack
+                    };
+                }
             }
             Eg1Stage::Delay => {
                 if !gate {
@@ -89,22 +117,31 @@ impl Eg1Dar {
                 self.level += alpha * (1.22 - self.level);
                 if self.level >= 1.0 {
                     self.level = 1.0;
-                    self.stage = Eg1Stage::SustainHold;
+                    // Transition into Release decay so the full Delay -> Attack -> Release
+                    // contour is heard while the note/VCA is open!
+                    self.stage = Eg1Stage::Release;
                 }
             }
             Eg1Stage::SustainHold => {
-                self.level = 1.0;
-                if !gate {
-                    self.stage = Eg1Stage::Release;
-                }
+                self.stage = Eg1Stage::Release;
             }
             Eg1Stage::Release => {
                 let tau = knob_to_tau(release_knob);
                 let alpha = 1.0 - (-1.0 / (tau * sample_rate)).exp();
                 self.level += alpha * (0.0 - self.level);
-                if self.level < 0.0005 {
+                if self.level < 0.002 {
                     self.level = 0.0;
-                    self.stage = Eg1Stage::Idle;
+                    if gate && auto_cycle_when_held {
+                        let delay_sec = knob_to_time_sec(delay_knob);
+                        self.delay_remaining_samples = (delay_sec * sample_rate) as u32;
+                        self.stage = if self.delay_remaining_samples > 0 {
+                            Eg1Stage::Delay
+                        } else {
+                            Eg1Stage::Attack
+                        };
+                    } else {
+                        self.stage = Eg1Stage::Idle;
+                    }
                 }
             }
         }
@@ -148,6 +185,13 @@ impl Default for Eg2Hadsr {
 }
 
 impl Eg2Hadsr {
+    #[inline]
+    pub fn retrigger(&mut self) {
+        self.prev_gate = false;
+        self.level = 0.0;
+        self.stage = Eg2Stage::Idle;
+    }
+
     #[inline]
     pub fn process(
         &mut self,

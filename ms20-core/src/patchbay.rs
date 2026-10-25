@@ -193,25 +193,80 @@ impl Patchbay {
         None
     }
 
-    /// Update the Sample & Hold (`S&H`) and Auxiliary Patch VCA (`MVCA`) modules
+    #[inline]
+    pub fn read_dest_with_source(&self, dest: PatchDest) -> Option<(PatchSource, f32)> {
+        for cable in &self.cables {
+            if cable.dest == dest {
+                return Some((cable.source, self.source_values[cable.source as usize]));
+            }
+        }
+        None
+    }
+
+    #[inline]
+    pub fn is_source_patched(&self, source: PatchSource) -> bool {
+        self.cables.iter().any(|c| c.source == source)
+    }
+
+    #[inline]
+    pub fn is_dest_patched(&self, dest: PatchDest) -> bool {
+        self.cables.iter().any(|c| c.dest == dest)
+    }
+
+    #[inline]
+    pub fn has_any_esp_out_patched(&self) -> bool {
+        self.cables.iter().any(|c| {
+            matches!(
+                c.source,
+                PatchSource::EspAmpOut
+                    | PatchSource::EspBpfOut
+                    | PatchSource::EspFvCvOut
+                    | PatchSource::EspEnvOut
+                    | PatchSource::EspTrigOut
+            )
+        })
+    }
+
+    /// Update the Sample & Hold (`S&H`) and Auxiliary Patch VCA (`MVCA`) modules.
+    /// Per the MS-20 front-panel normalled guide lines:
+    /// - `S&H IN` is normalled to `PINK NOISE` if unplugged, and `S&H CLOCK` is normalled to `MG PULSE` if unplugged,
+    ///   so patching `S&H OUT` with a single cable immediately produces stepped random modulation.
+    /// - `MVCA IN` is normalled to `MG TRIANGLE` if unplugged, and `MVCA CTRL` is normalled to `EG1 NORMAL OUT` if unplugged,
+    ///   so patching `MVCA OUT` with a single cable immediately produces envelope-controlled vibrato/modulation.
     #[inline]
     pub fn step_aux_modules(&mut self) {
         // 1. Sample & Hold (S&H): samples S&H IN on positive clock edge at S&H CLOCK
-        let sh_in = self.read_dest(PatchDest::SampleHoldIn).unwrap_or(0.0);
-        let sh_clk_val = self.read_dest(PatchDest::SampleHoldClock).unwrap_or(0.0);
-        let clk_high = sh_clk_val > 0.25;
+        let default_sh_in = self.source_values[PatchSource::PinkNoiseOut as usize];
+        let default_sh_clk = self.source_values[PatchSource::MgPulseOut as usize];
+        let sh_in = self.read_dest(PatchDest::SampleHoldIn).unwrap_or(default_sh_in);
+        let sh_clk_val = self
+            .read_dest(PatchDest::SampleHoldClock)
+            .unwrap_or(default_sh_clk);
+
+        let clk_high = sh_clk_val > 0.15;
         if clk_high && !self.sh_prev_clock {
-            self.sh_held_value = sh_in;
+            self.sh_held_value = (sh_in * 1.35).clamp(-1.0, 1.0);
         }
         self.sh_prev_clock = clk_high;
         self.source_values[PatchSource::SampleHoldOut as usize] = self.sh_held_value;
 
-        // 2. Auxiliary Patch VCA (MVCA): IN multiplied by CTRL (0..+1)
-        let mvca_in = self.read_dest(PatchDest::MvcaIn).unwrap_or(0.0);
-        let mvca_ctrl = self
-            .read_dest(PatchDest::MvcaCtrl)
-            .unwrap_or(0.0)
-            .clamp(0.0, 1.5);
-        self.source_values[PatchSource::MvcaOut as usize] = mvca_in * mvca_ctrl;
+        // 2. Auxiliary Patch VCA (MVCA): IN scaled by CTRL
+        let default_mvca_in = self.source_values[PatchSource::MgTriangleOut as usize];
+        let default_mvca_ctrl = self.source_values[PatchSource::Eg1NormalOut as usize];
+        let mvca_in = self.read_dest(PatchDest::MvcaIn).unwrap_or(default_mvca_in);
+        let mvca_ctrl = match self.read_dest_with_source(PatchDest::MvcaCtrl) {
+            Some((PatchSource::Eg1RevOut | PatchSource::Eg2RevOut, v)) => {
+                // Inverted envelopes (-1..0) act as +5V -> 0V ducking control on the MVCA
+                (1.0 + v).clamp(0.0, 1.2)
+            }
+            Some((_, v)) if v < 0.0 => {
+                // Bipolar LFO/audio control on MVCA: rectify/offset so negative half still modulates
+                v.abs().clamp(0.0, 1.5)
+            }
+            Some((_, v)) => v.clamp(0.0, 1.5),
+            None => default_mvca_ctrl.clamp(0.0, 1.5),
+        };
+        self.source_values[PatchSource::MvcaOut as usize] =
+            (mvca_in * mvca_ctrl).clamp(-1.5, 1.5);
     }
 }

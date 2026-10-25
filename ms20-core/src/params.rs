@@ -259,13 +259,13 @@ impl Default for SynthParams {
             mg_waveform: 5.0,
             mg_frequency: 4.5,
             eg1_delay: 0.0,
-            eg1_attack: 0.5,
-            eg1_release: 2.5,
+            eg1_attack: 2.2,
+            eg1_release: 4.2,
 
             eg2_hold: 0.0,
             eg2_attack: 0.3,
-            eg2_decay: 4.0,
-            eg2_sustain: 7.5,
+            eg2_decay: 4.5,
+            eg2_sustain: 6.0,
             eg2_release: 3.5,
 
             master_volume: 6.5,

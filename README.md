@@ -15,7 +15,8 @@
 5. [VST3 & CLAP DAW Plug-in (`nih-plug`)](#5-vst3--clap-daw-plug-in-nih-plug)
 6. [Keyboard & Interface Controls Reference](#6-keyboard--interface-controls-reference)
 7. [Basic Troubleshooting](#7-basic-troubleshooting)
-8. [License](#8-license)
+8. [Changelog](#8-changelog)
+9. [License](#9-license)
 
 ---
 
@@ -164,8 +165,9 @@ cargo test
 
 #### 4. 35-Jack Semi-Modular Patchbay & External Signal Processor (`ESP`) (`ms20-core/src/patchbay.rs`, `esp.rs`)
 - Implements all **20 Source Jacks** and **15 Destination Jacks** from the right-hand side of the Korg MS-20 front panel.
-- **Authentic Normalled Switching Jacks**: Just like the physical 3.5mm switching jacks on the MS-20, internal normalled connections (`MG Triangle -> TOTAL`, `EG1 -> FREQ`, `EG2 -> HPF/LPF CUTOFF`, `KEY CV -> VCO 1+2 CV IN`) are active by default and automatically break when a patch cable is plugged into the corresponding input jack.
-- Includes the auxiliary **Sample & Hold (`S&H`)** unit, **Patchbay VCA (`MVCA`)**, and the 6-stage **External Signal Processor (`ESP`)** (`PRE-AMP` $\rightarrow$ `LOW CUT` $\rightarrow$ `HIGH CUT` $\rightarrow$ `F-V PITCH CONVERTER`, `ENVELOPE FOLLOWER`, and `TRIG SCHMITT DETECTOR`).
+- **Authentic Normalled Switching Jacks**: Just like the physical 3.5mm switching jacks on the MS-20, internal normalled connections (`MG Triangle -> TOTAL`, `EG1 -> FREQ`, `EG2 -> HPF/LPF CUTOFF`, `KEY CV -> VCO 1+2 CV IN`, `PINK NOISE -> S&H IN`, `MG PULSE -> S&H CLOCK`, `MG TRI -> MVCA IN`, `EG1 -> MVCA CTRL`) are active by default and automatically break when a patch cable is plugged into the corresponding input jack.
+- **Smart Attenuator Engagement**: Connecting a cable into an attenuated modulation input (`TOTAL`, `FREQ`, `HPF CUTOFF`, `LPF CUTOFF`, or `EG1 TRIG`) automatically advances any `0.0` modulation depth knob (`MG/T.EXT`, `EG1/EXT`, `EG2/EXT`) to a musical default so every patch cable produces an immediate audible effect.
+- Includes the auxiliary **Sample & Hold (`S&H`)** unit, **Patchbay VCA (`MVCA`)**, **Control Wheel (`WHEEL ^`)**, **Momentary Switch (`MOMENT SW`)**, and the 6-stage **External Signal Processor (`ESP`)** (`PRE-AMP` $\rightarrow$ `LOW CUT` $\rightarrow$ `HIGH CUT` $\rightarrow$ `F-V PITCH CONVERTER`, `ENVELOPE FOLLOWER`, and `TRIG SCHMITT DETECTOR`).
 
 #### 5. The 5-Pedal Ambient Guitar Pedalboard (`ms20-core/src/dsp/pedals.rs`)
 Because the Korg MS-20 is a monophonic, mono-output synthesizer, KaloKorg M20s includes a 5-slot stereo guitar pedalboard on **Tab 2**:
@@ -210,13 +212,12 @@ Because the Korg MS-20 is a monophonic, mono-output synthesizer, KaloKorg M20s i
 ### Tutorial 3: Semi-Modular Patching on the 35-Jack Patchbay
 Let's patch a classic generative **Sample & Hold (S&H)** modulation routing:
 - **In the Web UI**:
-  1. Click the **`PINK NOISE`** output jack (`Row 4, Col 1`), then click the **`S&H IN`** input jack (`Row 3, Col 2`). A colored patch cord appears.
-  2. Click the **`MG PLS |_|`** output jack (`Row 2, Col 2`), then click the **`S&H CLK`** input jack (`Row 3, Col 1`).
-  3. Click the **`S&H OUT`** output jack (`Row 3, Col 3`), then click the **`TOTAL`** input jack (`Row 1, Col 1`).
-  4. Turn up **`LPF MG/T.EXT`** (knob #18) and **`FM MG/T.EXT`** (knob #10). Because **`TOTAL`** is plugged in, it automatically overrides the normalled MG Triangle wave and routes the stepped random Sample & Hold voltage into your filter and oscillator pitch!
+  1. **Single-Cable Quick Patch**: Because `S&H IN` is normalled to `PINK NOISE` and `S&H CLK` is normalled to `MG PLS |_|`, you can simply click **`S&H OUT`** (`Row 3, Col 3`) and then click **`TOTAL`** (`Row 1, Col 1`) or **`LPF FC`** (`Row 1, Col 5`) to immediately hear stepped random filter/pitch modulation!
+  2. **Custom 3-Cable S&H Patch**: Or patch any custom source into **`S&H IN`** (`Row 3, Col 2`), any clock into **`S&H CLK`** (`Row 3, Col 1`), and route **`S&H OUT`** (`Row 3, Col 3`) into **`TOTAL`** (`Row 1, Col 1`).
+  3. Connecting to **`TOTAL`**, **`FREQ`**, **`HPF FC`**, or **`LPF FC`** automatically engages the corresponding **`MG/T.EXT`** / **`EG1/EXT`** / **`EG2/EXT`** depth knobs if they were at `0.0`, and you can fine-tune the modulation depth with those knobs or sweep the **`WHEEL`** slider / **`MOMENT SW`** button in the patchbay header.
 - **In the TUI**:
-  1. Press **`J`** to switch focus from the Knobs to the **35-Jack Patchbay**.
-  2. Use `Up`/`Down` to pick a Source Jack, `Left`/`Right` to pick a Destination Jack, and `Enter` to connect a patch cable (or `Backspace` to unplug).
+  1. Press **`J`** to switch focus from the Knobs to the **35-Jack Patchbay** (which automatically scrolls across all 20 Sources and 15 Destinations).
+  2. Use `Up`/`Down` to pick a Source Jack, `Left`/`Right` to pick a Destination Jack, and `Enter` (or `Space`) to connect a patch cable (`Backspace`/`X` to unplug a destination, or `U` to clear all cables).
 
 ### Tutorial 4: Designing Your Ambient Guitar Pedal Chain
 1. Press **`Tab`** (or **`F2`**) in the TUI, or click **`2. AMBIENT FX PEDALS (5 STOMPBOXES)`** in the Web UI.
@@ -288,7 +289,9 @@ Copy the generated `.clap` or `.vst3` bundle into your OS plugin directory:
 | `Up` / `Down` or `+` / `-` | Vertical Mouse Drag | Adjust selected parameter (`PageUp` / `PageDown` for coarse steps) |
 | `J` | Click 3.5mm Jacks Directly | Toggle TUI focus between **Front-Panel Knobs** and **35-Jack Patchbay** |
 | `Enter` / `Space` | Click Footswitch / `BOSS` Pad | Connect 3.5mm patch cable (in Patchbay focus) or toggle Pedal Bypass ON/OFF (Tab 2) |
-| `Backspace` | Click Destination Jack | Unplug 3.5mm patch cable from selected Destination jack |
+| `Backspace` / `Delete` / `X` | Click Plugged Destination Jack | Unplug 3.5mm patch cable from selected Destination jack |
+| `U` (in Patchbay focus) | `Clear Cables` Button | Unplug all 3.5mm patchbay cables |
+| — | `WHEEL:` Slider & `MOMENT SW` Button | Sweep the MS-20 left-hand Control Wheel (`-5V..+5V` on `WHEEL (^)`) or toggle the Momentary Switch (`+5V` on `MOMENT SW`) |
 | `<` / `>` (or `,` / `.`) | `◀ Left` / `Right ▶` Buttons | **Reorder the selected Guitar Pedal earlier or later in the 5-pedal chain** |
 | `F` | `FREEZE` Footswitch | Toggle granular buffer **FREEZE** on Red Panda Particle 2 |
 | `D` | `DRONE GATE` Button | Latch the MS-20 gate open for continuous hands-free drone synthesis |
@@ -333,6 +336,12 @@ Copy the generated `.clap` or `.vst3` bundle into your OS plugin directory:
 
 ---
 
-## 8. License
+## 8. Changelog
+
+See [`CHANGELOG.md`](./CHANGELOG.md) for a detailed history of releases, DSP improvements, and bug fixes.
+
+---
+
+## 9. License
 
 All source code in this project is licensed under the **GNU General Public License v3.0 (GPL-3.0-or-later)**. See [`LICENSE`](./LICENSE) for the full license text.

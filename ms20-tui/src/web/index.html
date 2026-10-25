@@ -760,7 +760,13 @@
           <span class="flow-arrow">→</span>
           <span class="flow-node">VCA</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="ctrl-pill" title="MS-20 Left-Hand Control Wheel (-5V .. +5V) feeding the WHEEL (^) patchbay jack">
+            <span>WHEEL:</span>
+            <input type="range" id="wheelSlider" min="-5" max="5" step="0.1" value="0.0" style="width:58px;accent-color:var(--accent-gold);cursor:pointer;" oninput="setParam(39, parseFloat(this.value))" />
+            <span id="wheelLabel" style="color:var(--accent-gold);font-family:monospace;min-width:30px;">0.0</span>
+          </div>
+          <button class="small-btn" id="momentSwBtn" onclick="toggleMomentarySw()" title="Toggle Momentary Switch (+5V gate out on MOMENT SW patchbay jack)">MOMENT SW: OFF</button>
           <div id="knob-30"></div>
           <button class="small-btn" onclick="clearAllCables()" title="Unplug all 3.5mm patch cables">Clear Cables</button>
         </div>
@@ -924,7 +930,7 @@ let paramValues = {
   20:5.0, 21:4.5, 22:0, 23:0.5, 24:2.5,
   25:0, 26:0.3, 27:4.0, 28:7.5, 29:3.5,
   30:6.5, 31:5.0, 32:2.0, 33:8.0, 34:5.0, 35:4.0,
-  36:0, 37:0, 38:-6.0,
+  36:0, 37:0, 38:-6.0, 39:0.0, 40:0,
   // Pedals
   100:1, 101:0, 102:7.5, 103:4.2, 104:7.0, 105:6.2,
   110:1, 111:0, 112:6.5, 113:6.8, 114:5.5, 115:5.0,
@@ -1041,6 +1047,23 @@ function updateKnobVisual(paramId) {
     if (label) label.textContent = (val >= 0 ? "+" : "") + val.toFixed(1) + " dB";
     return;
   }
+  if (paramId === 39) {
+    const val = Number(paramValues[39] ?? 0.0);
+    const slider = document.getElementById("wheelSlider");
+    const label = document.getElementById("wheelLabel");
+    if (slider) slider.value = val;
+    if (label) label.textContent = (val > 0 ? "+" : "") + val.toFixed(1);
+    return;
+  }
+  if (paramId === 40) {
+    const on = Number(paramValues[40] ?? 0) >= 0.5;
+    const btn = document.getElementById("momentSwBtn");
+    if (btn) {
+      btn.textContent = on ? "MOMENT SW: ON" : "MOMENT SW: OFF";
+      btn.classList.toggle("active-drone", on);
+    }
+    return;
+  }
   const def = findAnyKnobDef(paramId);
   if (def) {
     const val = paramValues[paramId];
@@ -1092,36 +1115,63 @@ const DST_ENUM_NAMES = [
 function SourceEnumToIndex(s) { return typeof s === "number" ? s : Math.max(0, SRC_ENUM_NAMES.indexOf(s)); }
 function DestEnumToIndex(d)   { return typeof d === "number" ? d : Math.max(0, DST_ENUM_NAMES.indexOf(d)); }
 
+function toggleMomentarySw() {
+  const next = (paramValues[40] ?? 0) >= 0.5 ? 0 : 1;
+  setParam(40, next);
+}
+
 function onJackClick(type, idx) {
   if (type === "src") {
     pendingSourceJack = (pendingSourceJack === idx) ? null : idx;
     renderPatchbayJacks();
   } else {
     if (pendingSourceJack !== null) {
+      const srcIdx = pendingSourceJack;
+      activeCables = activeCables.filter(c => DestEnumToIndex(c.dest) !== idx);
+      activeCables.push({ source: SRC_ENUM_NAMES[srcIdx], dest: DST_ENUM_NAMES[idx], color_idx: activeCables.length % 6 });
+      pendingSourceJack = null;
+      eg1Level = 0.0;
+      renderPatchbayJacks();
+      inFlightWrites++;
       fetch("/api/patch/connect", {
         method: "POST",
-        body: JSON.stringify({ source: pendingSourceJack, dest: idx })
-      });
-      activeCables = activeCables.filter(c => DestEnumToIndex(c.dest) !== idx);
-      activeCables.push({ source: SRC_ENUM_NAMES[pendingSourceJack], dest: DST_ENUM_NAMES[idx], color_idx: activeCables.length % 6 });
-      pendingSourceJack = null;
-      renderPatchbayJacks();
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: srcIdx, dest: idx })
+      })
+        .catch(() => {})
+        .finally(() => {
+          inFlightWrites = Math.max(0, inFlightWrites - 1);
+          pollServerState();
+        });
     } else {
+      activeCables = activeCables.filter(c => DestEnumToIndex(c.dest) !== idx);
+      renderPatchbayJacks();
+      inFlightWrites++;
       fetch("/api/patch/disconnect", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dest: idx })
-      });
-      activeCables = activeCables.filter(c => DestEnumToIndex(c.dest) !== idx);
-      renderPatchbayJacks();
+      })
+        .catch(() => {})
+        .finally(() => {
+          inFlightWrites = Math.max(0, inFlightWrites - 1);
+          pollServerState();
+        });
     }
   }
 }
 
 function clearAllCables() {
-  fetch("/api/patch/clear", { method: "POST" });
   activeCables = [];
   pendingSourceJack = null;
   renderPatchbayJacks();
+  inFlightWrites++;
+  fetch("/api/patch/clear", { method: "POST" })
+    .catch(() => {})
+    .finally(() => {
+      inFlightWrites = Math.max(0, inFlightWrites - 1);
+      pollServerState();
+    });
 }
 
 function drawPatchCablesSvg() {
@@ -1422,7 +1472,8 @@ let browserAudioEnabled = false;
 let activeNote = 60;
 let noteGate = false;
 let vco1Phase = 0, vco2Phase = 0.23, mgPhase = 0;
-let eg1Level = 0, eg2Level = 0;
+let eg1Level = 0, eg1Rising = true, eg2Level = 0;
+let shHeldVal = 0, shPrevClk = false, lastSigOut = 0, espEnvState = 0;
 let hpfS1 = 0, hpfS2 = 0, lpfS1 = 0, lpfS2 = 0;
 let delayBufL = new Float32Array(96000);
 let delayBufR = new Float32Array(96000);
@@ -1432,6 +1483,17 @@ let revPos = [0, 0, 0, 0];
 let browserRecChunksL = [];
 let browserRecChunksR = [];
 let isRecordingState = false;
+
+function readBrowserPatchDest(destIdx, srcVals) {
+  for (let i = 0; i < activeCables.length; i++) {
+    const c = activeCables[i];
+    if (DestEnumToIndex(c.dest) === destIdx) {
+      const sIdx = SourceEnumToIndex(c.source);
+      return { srcIdx: sIdx, val: srcVals[sIdx] ?? 0 };
+    }
+  }
+  return null;
+}
 
 function ensureBrowserAudio() {
   if (audioCtx || !browserAudioEnabled) return;
@@ -1447,60 +1509,152 @@ function ensureBrowserAudio() {
       outL.fill(0); outR.fill(0);
       return;
     }
-    const gate = noteGate || (paramValues[37] >= 0.5);
+    const kbdGate = noteGate || (paramValues[37] >= 0.5);
     const baseHz = 440 * Math.pow(2, (activeNote - 69) / 12);
+    const keyCv = Math.log2(baseHz / 261.62558) * 0.25;
     const scale1 = [0.25, 0.5, 1.0, 2.0][Math.round(paramValues[2] ?? 2) % 4];
     const scale2 = [0.5, 1.0, 2.0, 4.0][Math.round(paramValues[6] ?? 1) % 4];
     const vco2Ratio = Math.pow(2, (((paramValues[5] ?? 0) / 5) * 12) / 12);
     const tuneRatio = Math.pow(2, (((paramValues[7] ?? 0) / 5)) / 12);
 
     const mgHz = 0.1 + Math.pow((paramValues[21] ?? 4.5) / 10, 2) * 28.0;
+    const mgSkew = Math.max(0.04, Math.min(0.96, 0.04 + ((paramValues[20] ?? 5.0) / 10) * 0.92));
+    const eg1AttAlpha = 1 - Math.exp(-1 / ((0.002 + Math.pow((paramValues[23] ?? 2.2) / 10, 2.1) * 3.0) * sr));
+    const eg1RelAlpha = 1 - Math.exp(-1 / ((0.004 + Math.pow((paramValues[24] ?? 4.2) / 10, 2.1) * 3.5) * sr));
     const attAlpha = 1 - Math.exp(-1 / ((0.002 + Math.pow((paramValues[26] ?? 0.3) / 10, 2.1) * 2.5) * sr));
-    const decAlpha = 1 - Math.exp(-1 / ((0.004 + Math.pow((paramValues[27] ?? 4.0) / 10, 2.1) * 3.0) * sr));
+    const decAlpha = 1 - Math.exp(-1 / ((0.004 + Math.pow((paramValues[27] ?? 4.5) / 10, 2.1) * 3.0) * sr));
     const relAlpha = 1 - Math.exp(-1 / ((0.004 + Math.pow((paramValues[29] ?? 3.5) / 10, 2.1) * 3.5) * sr));
-    const susLvl = (paramValues[28] ?? 7.5) / 10;
+    const susLvl = (paramValues[28] ?? 6.0) / 10;
+    const srcVals = new Float32Array(20);
 
     for (let i = 0; i < outL.length; i++) {
+      const white = Math.random() * 2 - 1;
+      const pink = Math.max(-1, Math.min(1, white * 0.75 + lastSigOut * 0.25));
       mgPhase = (mgPhase + mgHz / sr) % 1.0;
-      const mgTri = mgPhase < 0.5 ? (-1 + 4 * mgPhase) : (3 - 4 * mgPhase);
-      if (gate) {
-        eg1Level += attAlpha * (1 - eg1Level);
+      const mgTri = mgPhase < mgSkew ? (-1 + 2 * (mgPhase / mgSkew)) : (1 - 2 * ((mgPhase - mgSkew) / (1 - mgSkew)));
+      const mgPls = mgPhase < mgSkew ? 1.0 : -1.0;
+
+      srcVals[0] = lastSigOut;
+      srcVals[1] = Math.tanh(lastSigOut * 1.85);
+      srcVals[2] = mgTri;
+      srcVals[3] = mgPls;
+      srcVals[7] = Math.max(-1, Math.min(1, keyCv + 0.55));
+      srcVals[8] = noteGate ? 1.0 : (kbdGate ? (mgPls > 0 ? 1.0 : 0.0) : 0.0);
+      srcVals[11] = pink;
+      srcVals[12] = white;
+      const wheelRaw = (paramValues[39] ?? 0) / 5.0;
+      srcVals[13] = Math.abs(wheelRaw) < 0.02 ? (0.65 + 0.2 * mgTri) : wheelRaw;
+      srcVals[14] = (paramValues[40] ?? 0) >= 0.5 ? 1.0 : (mgPls > 0 ? 1.0 : 0.0);
+
+      // ESP section
+      const espInPatch = readBrowserPatchDest(14, srcVals);
+      const espIn = espInPatch ? espInPatch.val : (lastSigOut * 1.85 + pink * 0.12);
+      const espAmp = Math.tanh(espIn * (0.5 + Math.pow((paramValues[31] ?? 5) / 10, 1.3) * 8.5));
+      espEnvState += 0.01 * (Math.min(1, Math.abs(espAmp) * 1.35) - espEnvState);
+      srcVals[15] = espAmp;
+      srcVals[16] = Math.tanh(espAmp * 1.4);
+      srcVals[17] = Math.max(-1, Math.min(1, (keyCv + espAmp * 0.35) * ((paramValues[34] ?? 5) / 5)));
+      srcVals[18] = espEnvState;
+      srcVals[19] = espEnvState >= ((paramValues[35] ?? 4) / 10) * 0.75 ? 1.0 : 0.0;
+
+      // S&H (Dest 10 = In, Dest 11 = Clock, Src 9 = Out)
+      const shIn = (readBrowserPatchDest(10, srcVals) || { val: pink }).val;
+      const shClk = (readBrowserPatchDest(11, srcVals) || { val: mgPls }).val > 0.15;
+      if (shClk && !shPrevClk) shHeldVal = Math.max(-1, Math.min(1, shIn * 1.35));
+      shPrevClk = shClk;
+      srcVals[9] = shHeldVal;
+
+      // Triggers & Envelopes (Dest 8 = EG1 Trig, Dest 9 = Main Trig)
+      const mainTrig = readBrowserPatchDest(9, srcVals);
+      const eg1Trig = readBrowserPatchDest(8, srcVals);
+      const eg2Gate = mainTrig ? (mainTrig.val > 0.15) : kbdGate;
+      const eg1Gate = eg1Trig ? (eg1Trig.val > 0.15) : (mainTrig ? (mainTrig.val > 0.15) : kbdGate);
+
+      if (eg1Gate) {
+        if (eg1Rising) {
+          eg1Level += eg1AttAlpha * (1.2 - eg1Level);
+          if (eg1Level >= 1.0) { eg1Level = 1.0; eg1Rising = false; }
+        } else {
+          eg1Level += eg1RelAlpha * (0 - eg1Level);
+          if (eg1Level < 0.01 && !noteGate && kbdGate) eg1Rising = true;
+        }
+      } else {
+        eg1Rising = true;
+        eg1Level += eg1RelAlpha * (0 - eg1Level);
+      }
+      if (eg2Gate) {
         eg2Level += (eg2Level < 0.98 ? attAlpha * (1.05 - eg2Level) : decAlpha * (susLvl - eg2Level));
       } else {
-        eg1Level += relAlpha * (0 - eg1Level);
         eg2Level += relAlpha * (0 - eg2Level);
       }
+      srcVals[4] = eg1Level;
+      srcVals[5] = -eg1Level;
+      srcVals[6] = (!noteGate && kbdGate) ? (-0.25 - 0.75 * eg1Level) : -eg2Level;
 
-      const fmOct = ((paramValues[10] ?? 0) / 10) * mgTri * 0.6 + ((paramValues[11] ?? 0) / 10) * eg1Level * 1.2;
-      const f1 = baseHz * scale1 * tuneRatio * Math.pow(2, fmOct);
-      const f2 = baseHz * scale2 * vco2Ratio * tuneRatio * Math.pow(2, fmOct);
-      vco1Phase = (vco1Phase + f1 / sr) % 1.0;
-      vco2Phase = (vco2Phase + f2 / sr) % 1.0;
+      // MVCA (Dest 12 = In, Dest 13 = Ctrl, Src 10 = Out)
+      const mvcaIn = (readBrowserPatchDest(12, srcVals) || { val: mgTri }).val;
+      const mvcaCtrlPatch = readBrowserPatchDest(13, srcVals);
+      const mvcaCtrl = mvcaCtrlPatch
+        ? ((mvcaCtrlPatch.srcIdx === 5 || mvcaCtrlPatch.srcIdx === 6) ? Math.max(0, 1 + mvcaCtrlPatch.val) : Math.abs(mvcaCtrlPatch.val))
+        : eg1Level;
+      srcVals[10] = Math.max(-1.5, Math.min(1.5, mvcaIn * mvcaCtrl));
+
+      // Resolve Patched Modulation Destinations
+      const totalPatch = readBrowserPatchDest(0, srcVals);
+      const freqPatch = readBrowserPatchDest(1, srcVals);
+      const extInPatch = readBrowserPatchDest(2, srcVals);
+      const hpfPatch = readBrowserPatchDest(3, srcVals);
+      const lpfPatch = readBrowserPatchDest(4, srcVals);
+      const initGainPatch = readBrowserPatchDest(5, srcVals);
+      const vco12Patch = readBrowserPatchDest(6, srcVals);
+      const vco2Patch = readBrowserPatchDest(7, srcVals);
+
+      const mgOrTotal = totalPatch ? totalPatch.val : mgTri;
+      const fmEg1OrExt = freqPatch ? freqPatch.val : eg1Level;
+      const allMgZero = (paramValues[10] ?? 0) <= 0.05 && (paramValues[14] ?? 0) <= 0.05 && (paramValues[18] ?? 0) <= 0.05;
+      const effFmMg = (totalPatch && allMgZero) ? 3.2 : (paramValues[10] ?? 0);
+      const effHpfMg = (totalPatch && allMgZero) ? 3.5 : (paramValues[14] ?? 0);
+      const effLpfMg = (totalPatch && allMgZero) ? 6.5 : (paramValues[18] ?? 0);
+      const effFmEg1 = (freqPatch && (paramValues[11] ?? 0) <= 0.05) ? 6.0 : (paramValues[11] ?? 0);
+      const effHpfEg2 = (hpfPatch && (paramValues[15] ?? 0) <= 0.05) ? 6.5 : (paramValues[15] ?? 0);
+      const effLpfEg2 = (lpfPatch && (paramValues[19] ?? 0) <= 0.05) ? 6.5 : (paramValues[19] ?? 4.5);
+
+      const vco12Cv = vco12Patch ? (vco12Patch.srcIdx === 7 ? vco12Patch.val - 0.55 : keyCv + vco12Patch.val * 0.55) : keyCv;
+      const vco2Cv = vco2Patch ? (vco2Patch.srcIdx === 7 ? vco2Patch.val - 0.55 : vco12Cv + vco2Patch.val * 0.55) : vco12Cv;
+
+      const fmOct = Math.pow(effFmMg / 10, 1.3) * mgOrTotal * 2.0 + Math.pow(effFmEg1 / 10, 1.25) * fmEg1OrExt * 2.6;
+      const f1 = 261.62558 * Math.pow(2, vco12Cv * 4.0 + fmOct) * scale1 * tuneRatio;
+      const f2 = 261.62558 * Math.pow(2, vco2Cv * 4.0 + fmOct) * scale2 * vco2Ratio * tuneRatio;
+      vco1Phase = (vco1Phase + Math.min(0.47, f1 / sr)) % 1.0;
+      vco2Phase = (vco2Phase + Math.min(0.47, f2 / sr)) % 1.0;
 
       const w1 = Math.round(paramValues[0] ?? 1) % 4;
       const pw = 0.5 + ((paramValues[1] ?? 0) / 10) * 0.42;
       const sq1 = vco1Phase < pw ? 1 : -1;
-      let s1 = w1 === 0 ? (1 - 4 * Math.abs(vco1Phase - 0.5)) : w1 === 1 ? (2 * vco1Phase - 1) : w1 === 2 ? sq1 : (Math.random() * 2 - 1);
+      let s1 = w1 === 0 ? (1 - 4 * Math.abs(vco1Phase - 0.5)) : w1 === 1 ? (2 * vco1Phase - 1) : w1 === 2 ? sq1 : white;
 
       const w2 = Math.round(paramValues[4] ?? 0) % 4;
       const sq2 = vco2Phase < (w2 === 2 ? 0.18 : 0.5) ? 1 : -1;
       let s2 = w2 === 0 ? (2 * vco2Phase - 1) : w2 === 3 ? (sq1 * sq2) : sq2;
 
-      const mix = (s1 * ((paramValues[8] ?? 10) / 10) + s2 * ((paramValues[9] ?? 8.5) / 10)) * 0.45;
+      const extAudio = extInPatch ? extInPatch.val * 1.55 : 0;
+      const mix = (s1 * ((paramValues[8] ?? 10) / 10) + s2 * ((paramValues[9] ?? 8.5) / 10) + extAudio) * 0.50;
 
       // Dual KORG35 TPT HPF -> LPF
-      const hpfOct = ((paramValues[12] ?? 0.5) / 10) * 9.2 + ((paramValues[15] ?? 0) / 10) * eg2Level * 4.0;
+      const hpfExtVal = hpfPatch ? (hpfPatch.val < 0 && (paramValues[12] ?? 0.5) < 3 ? Math.abs(hpfPatch.val) * 1.15 : 0.35 + hpfPatch.val * 0.85) : eg2Level;
+      const hpfOct = ((paramValues[12] ?? 0.5) / 10) * 9.2 + (effHpfMg / 10) * mgOrTotal * 4.5 + (effHpfEg2 / 10) * hpfExtVal * 6.0;
       const hpfFc = Math.min(sr * 0.42, 16 * Math.pow(2, Math.max(0, hpfOct)));
       const gh = Math.tan(Math.PI * hpfFc / sr);
       const Gh = gh / (1 + gh);
-      const kh = ((paramValues[13] ?? 1.5) / 10) * 1.85;
+      const kh = ((hpfPatch && (paramValues[13] ?? 1.5) < 3.5 ? 4.2 : (paramValues[13] ?? 1.5)) / 10) * 1.85;
       const uh = Math.tanh(mix + kh * Math.tanh(hpfS1 - hpfS2));
       const vh1 = Gh * (uh - hpfS1); const yh1 = vh1 + hpfS1; hpfS1 = yh1 + vh1;
       const vh2 = Gh * (yh1 - hpfS2); const yh2 = vh2 + hpfS2; hpfS2 = yh2 + vh2;
       const hpOut = uh - 2 * yh1 + yh2;
 
-      const lpfOct = ((paramValues[16] ?? 6.8) / 10) * 9.5 + ((paramValues[18] ?? 0) / 10) * mgTri * 2.5 + ((paramValues[19] ?? 4.5) / 10) * eg2Level * 5.0;
-      const lpfFc = Math.min(sr * 0.44, 24 * Math.pow(2, Math.max(0, lpfOct)));
+      const lpfExtVal = lpfPatch ? ((paramValues[16] ?? 6.8) > 5.0 ? lpfPatch.val * 1.15 - 0.45 : lpfPatch.val * 1.15) : eg2Level;
+      const lpfOct = ((paramValues[16] ?? 6.8) / 10) * 9.5 + (effLpfMg / 10) * mgOrTotal * 4.8 + (effLpfEg2 / 10) * lpfExtVal * 6.0;
+      const lpfFc = Math.min(sr * 0.44, 22 * Math.pow(2, Math.max(0, lpfOct)));
       const gl = Math.tan(Math.PI * lpfFc / sr);
       const Gl = gl / (1 + gl);
       const kl = ((paramValues[17] ?? 3.5) / 10) * 1.92;
@@ -1510,7 +1664,13 @@ function ensureBrowserAudio() {
 
       const volNorm = Math.max(0, Math.min(1, (paramValues[30] ?? 6.5) / 10));
       const volGain = Math.pow(volNorm, 1.85) * 0.65;
-      let sig = yl2 * eg2Level * volGain;
+      const vcaGain = initGainPatch
+        ? ((initGainPatch.srcIdx === 5 || initGainPatch.srcIdx === 6)
+            ? eg2Level * Math.max(0.05, 1 + initGainPatch.val)
+            : (eg2Level > 0.05 ? eg2Level * Math.max(0, 0.45 + 0.85 * initGainPatch.val) : Math.max(0, initGainPatch.val)))
+        : eg2Level;
+      lastSigOut = Math.max(-1.5, Math.min(1.5, yl2 * vcaGain * volNorm * 1.45));
+      let sig = yl2 * vcaGain * volGain;
       let L = sig, R = sig;
 
       // BOSS CE-2W / DC-2W Stereo Chorus & Dimension Expander (Mono -> True Wide Stereo)
@@ -1696,7 +1856,7 @@ function pollServerState() {
       [20, s.mg_waveform], [21, s.mg_frequency], [22, s.eg1_delay], [23, s.eg1_attack], [24, s.eg1_release],
       [25, s.eg2_hold], [26, s.eg2_attack], [27, s.eg2_decay], [28, s.eg2_sustain], [29, s.eg2_release],
       [30, s.master_volume], [31, s.esp_signal_level], [32, s.esp_low_cut], [33, s.esp_high_cut], [34, s.esp_cv_adjust], [35, s.esp_threshold],
-      [37, s.drone_gate ? 1 : 0], [38, s.output_pad_db ?? -6.0]
+      [37, s.drone_gate ? 1 : 0], [38, s.output_pad_db ?? -6.0], [39, s.control_wheel ?? 0.0], [40, s.momentary_switch ? 1 : 0]
     ];
 
     if (st.pedals) {
@@ -1746,9 +1906,13 @@ function pollServerState() {
       renderPedalboard();
     }
 
-    if (Array.isArray(st.cables) && st.cables.length !== activeCables.length) {
-      activeCables = st.cables;
-      renderPatchbayJacks();
+    if (Array.isArray(st.cables)) {
+      const serverSig = st.cables.map(c => `${SourceEnumToIndex(c.source)}->${DestEnumToIndex(c.dest)}`).join(",");
+      const localSig = activeCables.map(c => `${SourceEnumToIndex(c.source)}->${DestEnumToIndex(c.dest)}`).join(",");
+      if (serverSig !== localSig) {
+        activeCables = st.cables;
+        renderPatchbayJacks();
+      }
     }
 
     document.getElementById("espPeakLed").classList.toggle("on", !!st.esp_peak_led);

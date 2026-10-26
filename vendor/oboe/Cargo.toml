@@ -1,0 +1,13 @@
+[package]
+name = "oboe"
+version = "0.6.1"
+edition = "2021"
+description = "Safe Rust wrapper for Google Oboe low-latency Android audio library"
+license = "Apache-2.0"
+
+[features]
+default = []
+shared-stdcxx = []
+java-interface = []
+
+[dependencies]

@@ -1,0 +1,13 @@
+[package]
+name = "android-activity"
+version = "0.5.2"
+edition = "2021"
+description = "Android Activity glue for Rust applications"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = []
+game-activity = []
+native-activity = []
+
+[dependencies]

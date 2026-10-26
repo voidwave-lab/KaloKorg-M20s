@@ -1,0 +1,8 @@
+[package]
+name = "cpal"
+version = "0.15.3"
+edition = "2021"
+description = "Cross-platform low-latency audio I/O library (CoreAudio AudioToolbox + cross-platform real-time stream)"
+license = "Apache-2.0"
+
+[dependencies]

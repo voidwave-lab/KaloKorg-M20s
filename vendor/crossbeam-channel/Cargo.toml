@@ -1,0 +1,35 @@
+[package]
+edition = "2021"
+rust-version = "1.60"
+name = "crossbeam-channel"
+version = "0.5.17"
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
+description = "Multi-producer multi-consumer channels for message passing"
+license = "MIT OR Apache-2.0"
+
+[features]
+default = ["std"]
+std = ["crossbeam-utils/std"]
+
+[lib]
+name = "crossbeam_channel"
+path = "src/lib.rs"
+
+[dependencies.crossbeam-utils]
+path = "../crossbeam-utils"
+version = "0.8.18"
+default-features = false
+
+[lints.rust.unexpected_cfgs]
+level = "allow"
+priority = 0
+check-cfg = [
+    "cfg(crossbeam_loom)",
+    "cfg(crossbeam_sanitize)",
+]
+

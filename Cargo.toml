@@ -1,10 +1,22 @@
+[package]
+name = "korg_ms20"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+authors = ["KaloKorg DSP Team"]
+description = "KaloKorg M20s - Faithful Korg MS-20 Mini Software Synthesizer & Ambient Guitar Pedalboard"
+
+[lib]
+name = "korg_ms20"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+
 [workspace]
 members = [
-    "ms20-core",
-    "ms20-tui",
-    "ms20-wasm",
-    "ms20-plugin",
-    "vendor/nih_plug",
+    ".",               # Existing core / desktop engine
+    "kalokorg-tablet", # New tablet-specific crate
 ]
 resolver = "2"
 
@@ -14,3 +26,12 @@ edition = "2021"
 license = "GPL-3.0-or-later"
 authors = ["KaloKorg DSP Team"]
 description = "KaloKorg M20s - Faithful Korg MS-20 Mini Software Synthesizer & Ambient Guitar Pedalboard"
+
+[patch.crates-io]
+eframe = { path = "vendor/eframe" }
+egui = { path = "vendor/egui" }
+crossbeam-channel = { path = "vendor/crossbeam-channel" }
+crossbeam-utils = { path = "vendor/crossbeam-utils" }
+cpal = { path = "vendor/cpal" }
+oboe = { path = "vendor/oboe" }
+android-activity = { path = "vendor/android-activity" }

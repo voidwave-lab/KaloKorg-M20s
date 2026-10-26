@@ -1,0 +1,25 @@
+[package]
+name = "kalokorg-tablet"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "kalokorg-tablet"
+path = "src/main.rs"
+
+[dependencies]
+korg_ms20 = { path = ".." } # Core DSP from the repository
+eframe = { version = "0.27", default-features = false, features = ["default_fonts", "glow"] }
+egui = "0.27"
+crossbeam-channel = "0.5"
+
+# Platform-specific audio backends
+[target.'cfg(target_os = "android")'.dependencies]
+oboe = { version = "0.6", features = ["shared-stdcxx"] }
+android-activity = { version = "0.5", features = ["game-activity"] }
+
+[target.'cfg(any(target_os = "ios", target_os = "macos", target_os = "windows", target_os = "linux"))'.dependencies]
+cpal = "0.15"

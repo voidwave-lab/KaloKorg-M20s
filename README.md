@@ -2,10 +2,11 @@
 
 [![KaloKorg M20s CI (DSP, TUI, Web UI & VST3/CLAP Plugin)](https://github.com/voidwave-lab/KaloKorg-M20s/actions/workflows/ci.yml/badge.svg)](https://github.com/voidwave-lab/KaloKorg-M20s/actions/workflows/ci.yml)
 
-**KaloKorg M20s** is a component-modeled software synthesizer clone of the **Korg MS-20 Mini** paired with a reorderable **5-Pedal Ambient & Experimental Guitar Pedalboard**. Written in Rust, it provides three ways to play and produce:
+**KaloKorg M20s** is a component-modeled software synthesizer clone of the **Korg MS-20 Mini** paired with a reorderable **5-Pedal Ambient & Experimental Guitar Pedalboard**. Written in Rust, it provides four ways to play and produce:
 1. **Interactive Terminal User Interface (TUI)** (`ratatui` + `crossterm`)
 2. **Real-Time Synced Web Interface** (vintage MS-20 front panel with SVG patch cables + 5 visual guitar stompboxes)
 3. **DAW Plug-in (`VST3` & `CLAP`)** powered by an `nih-plug` wrapper (`ms20-plugin`)
+4. **Dedicated Tablet Application (`iPadOS` & `Android Tablet`)** (`kalokorg-tablet`) built with `egui`/`eframe`, a 65%/35% landscape split viewport, an on-screen multi-touch glissando keyboard, and a lock-free sub-10ms audio pipeline (`cpal` CoreAudio / Google `oboe`)
 
 ---
 
@@ -15,10 +16,11 @@
 3. [What KaloKorg M20s Implements, How It Works & Inspiration](#3-what-kalokorg-m20s-implements-how-it-works--inspiration)
 4. [Basic Tutorial](#4-basic-tutorial)
 5. [VST3 & CLAP DAW Plug-in (`nih-plug`)](#5-vst3--clap-daw-plug-in-nih-plug)
-6. [Keyboard & Interface Controls Reference](#6-keyboard--interface-controls-reference)
-7. [Basic Troubleshooting](#7-basic-troubleshooting)
-8. [Changelog](#8-changelog)
-9. [License](#9-license)
+6. [Dedicated Tablet App (`iPadOS` & `Android Tablet` — `kalokorg-tablet`)](#6-dedicated-tablet-app-ipados--android-tablet--kalokorg-tablet)
+7. [Keyboard & Interface Controls Reference](#7-keyboard--interface-controls-reference)
+8. [Basic Troubleshooting](#8-basic-troubleshooting)
+9. [Changelog](#9-changelog)
+10. [License](#10-license)
 
 ---
 
@@ -282,7 +284,51 @@ Copy the generated `.clap` or `.vst3` bundle into your OS plugin directory:
 
 ---
 
-## 6. Keyboard & Interface Controls Reference
+## 6. Dedicated Tablet App (`iPadOS` & `Android Tablet` — `kalokorg-tablet`)
+
+KaloKorg M20s includes a dedicated, tablet-only application crate ([`kalokorg-tablet`](./kalokorg-tablet/)) written in pure Rust with **`egui` / `eframe`** (Option A) and ready-to-open **Xcode** and **Android Studio** project files.
+
+### Architecture & Tablet-Only Restrictions
+- **Strict Tablet-Only Form Factor**:
+  - **iPadOS** ([`Info.plist`](./kalokorg-tablet/Info.plist), [`ios/KaloKorgTablet/Info.plist`](./kalokorg-tablet/ios/KaloKorgTablet/Info.plist)): Enforces `UIDeviceFamily = [2]` (`TARGETED_DEVICE_FAMILY = 2`, strictly iPad only; iPhone `1` is excluded), `UIRequiresFullScreen = true`, and landscape-only orientations (`UIInterfaceOrientationLandscapeLeft` and `UIInterfaceOrientationLandscapeRight`).
+  - **Android Tablet** ([`AndroidManifest.xml`](./kalokorg-tablet/AndroidManifest.xml), [`android/app/src/main/AndroidManifest.xml`](./kalokorg-tablet/android/app/src/main/AndroidManifest.xml)): Restricts `<supports-screens>` to `smallScreens="false"`, `normalScreens="false"`, `largeScreens="true"`, `xlargeScreens="true"`, and `requiresSmallestWidthDp="600"`, locked to `android:screenOrientation="sensorLandscape"`.
+- **Landscape Split Viewport (`65%` Panel / `35%` Multi-Touch Keyboard)**:
+  - **Top 65% (`src/panel.rs`)**: VCO 1 & VCO 2 controls, Dual KORG35 HPF/LPF Cutoff & Peak rotary knobs, EG 1 (DAR) & EG 2 (HADSR) envelope sliders, 35-jack semi-modular patchbay routing, and Effects (Delay, Analog Saturator Drive, Stereo Chorus, Cloudburst Reverb, Particle 2 Freeze, and Output Volume).
+  - **Bottom 35% (`src/keyboard.rs`)**: On-screen multi-touch keyboard switchable between **25 keys (2 octaves, C2–C4)** and **37 keys (3 octaves, C2–C5)** with `Octave -` / `Octave +` navigation, MS-20 Control Wheel & Momentary Switch, independent multi-finger tracking (`HashMap<TouchId, u8>`), glissando transitions (`NoteOff` on exited key $\rightarrow$ `NoteOn` on entered key), and amber/orange active key illumination.
+- **Lock-Free Real-Time Audio (`src/audio.rs`)**:
+  - Uses `crossbeam_channel::bounded(256)` (`ControlEvent::{NoteOn, NoteOff, ParameterChange}`) for zero-allocation (`no-alloc`) communication between the `egui` UI thread and the real-time audio callback at $\le 256$ frames per buffer ($5.3\text{ ms}$ at $48\text{ kHz}$).
+  - Powered by **`cpal` (CoreAudio AudioUnit)** on iPadOS/macOS and **Google `oboe` (`PerformanceMode::LowLatency`, `SharingMode::Exclusive`)** on Android Tablets.
+
+### Desktop Development Preview
+Run and test the tablet application directly on your development machine:
+```bash
+cargo run -p kalokorg-tablet
+cargo test -p kalokorg-tablet
+```
+
+### Opening in Xcode (iPadOS)
+1. Install the Rust iOS targets:
+   ```bash
+   rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
+   ```
+2. Open the Xcode project:
+   ```bash
+   open kalokorg-tablet/ios/KaloKorgTablet.xcodeproj
+   ```
+3. Select an **iPad** device or **iPad Simulator** target and press **Run (`Cmd + R`)**. The Xcode project's **"Compile Rust kalokorg-tablet Library"** Run Script phase automatically builds `libkalokorg_tablet.a` via Cargo and links it with `AudioToolbox`, `CoreAudio`, `AVFoundation`, `Metal`, and `UIKit`.
+
+### Opening in Android Studio (Android Tablet)
+1. Install [`cargo-ndk`](https://github.com/bbqsrc/cargo-ndk) and the Android Rust targets:
+   ```bash
+   cargo install cargo-ndk
+   rustup target add aarch64-linux-android x86_64-linux-android
+   ```
+2. In **Android Studio**, choose **Open** and select [`kalokorg-tablet/android`](./kalokorg-tablet/android/).
+3. Run the `buildRustTabletLib` Gradle task (or build from the terminal via `./gradlew :app:buildRustTabletLib`) to compile `libkalokorg_tablet.so` into `app/src/main/jniLibs/`, then deploy to any Android Tablet or $600\text{dp}+$ Landscape Tablet Emulator.
+
+---
+
+## 7. Keyboard & Interface Controls Reference
 
 | Key (TUI) | Web UI Equivalent | Action |
 |---|---|---|
@@ -307,7 +353,7 @@ Copy the generated `.clap` or `.vst3` bundle into your OS plugin directory:
 
 ---
 
-## 7. Basic Troubleshooting
+## 8. Basic Troubleshooting
 
 1. **I don't hear any sound when turning knobs**:
    - The Korg MS-20 VCA only opens when a note gate is active (or `VCA INIT GAIN` is patched). Press **`D`** in the TUI (or click **`DRONE GATE: ON`** in the Web UI) to latch a continuous note, or press keys `Z, X, C, B, N` / `1..8` (or play a connected MIDI keyboard).
@@ -338,12 +384,12 @@ Copy the generated `.clap` or `.vst3` bundle into your OS plugin directory:
 
 ---
 
-## 8. Changelog
+## 9. Changelog
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for a detailed history of releases, DSP improvements, and bug fixes.
 
 ---
 
-## 9. License
+## 10. License
 
 All source code in this project is licensed under the **GNU General Public License v3.0 (GPL-3.0-or-later)**. See [`LICENSE`](./LICENSE) for the full license text.

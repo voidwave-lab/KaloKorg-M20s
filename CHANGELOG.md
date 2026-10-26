@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.2.0] - 2026-10-26
+
+### Added
+- **Dedicated Tablet Application for iPadOS & Android Tablet (`kalokorg-tablet`)**:
+  - Implemented pure-Rust `egui` / `eframe` tablet synthesizer application (`kalokorg-tablet/src/{lib,main,app,panel,keyboard,audio}.rs`) with a landscape split viewport (**65% Top MS-20 Synth, Patchbay & Effects Panel** / **35% Bottom Multi-Touch Keyboard**).
+  - **Multi-Touch & Glissando Keyboard (`keyboard.rs`)**: Supports 25-key (2 octaves, C2–C4) and 37-key (3 octaves, C2–C5) spans, `Octave -` / `Octave +` transpose controls, independent multi-finger tracking (`HashMap<TouchId, u8>`), glissando slide transitions (`NoteOff` on exited key, `NoteOn` on entered key), and amber/orange active key highlights.
+  - **Lock-Free Sub-10ms Audio Pipeline (`audio.rs`)**: Uses `crossbeam_channel::bounded(256)` (`ControlEvent::{NoteOn, NoteOff, ParameterChange}`) feeding a zero-allocation (`no-alloc`) 256-frame callback (`5.3 ms` at `48 kHz`) backed by `cpal` (CoreAudio AudioUnit) on iPadOS/Desktop and Google `oboe` (`LowLatency` + `Exclusive`) on Android Tablets.
+  - **Strict Tablet-Only Manifests & IDE Projects**:
+    - Added **Xcode project** (`kalokorg-tablet/ios/KaloKorgTablet.xcodeproj`) and `Info.plist` enforcing `UIDeviceFamily = 2` (iPad strictly, omitting iPhone `1`), `UIRequiresFullScreen = true`, and landscape-only orientations.
+    - Added **Android Studio Gradle project** (`kalokorg-tablet/android/`) and `AndroidManifest.xml` enforcing `requiresSmallestWidthDp="600"`, `largeScreens="true"`, `xlargeScreens="true"`, `smallScreens="false"`, `normalScreens="false"`, and `android:screenOrientation="sensorLandscape"`.
+
+---
+
 ## [0.1.1] - 2026-10-25
 
 ### Fixed

@@ -1,0 +1,295 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A10000100000000000000001 /* main.m */; };
+		A10000020000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A10000110000000000000001 /* LaunchScreen.storyboard */; };
+		A10000030000000000000001 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000200000000000000001 /* UIKit.framework */; };
+		A10000040000000000000001 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000210000000000000001 /* Foundation.framework */; };
+		A10000050000000000000001 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000220000000000000001 /* AudioToolbox.framework */; };
+		A10000060000000000000001 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000230000000000000001 /* CoreAudio.framework */; };
+		A10000070000000000000001 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000240000000000000001 /* AVFoundation.framework */; };
+		A10000080000000000000001 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000250000000000000001 /* Metal.framework */; };
+		A10000090000000000000001 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000260000000000000001 /* QuartzCore.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A10000100000000000000001 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		A10000110000000000000001 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A10000120000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000130000000000000001 /* kalokorg_tablet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = kalokorg_tablet.h; sourceTree = "<group>"; };
+		A10000200000000000000001 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		A10000210000000000000001 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		A10000220000000000000001 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		A10000230000000000000001 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		A10000240000000000000001 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		A10000250000000000000001 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		A10000260000000000000001 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		A10000300000000000000001 /* KaloKorgTablet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KaloKorgTablet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10000400000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000030000000000000001 /* UIKit.framework in Frameworks */,
+				A10000040000000000000001 /* Foundation.framework in Frameworks */,
+				A10000050000000000000001 /* AudioToolbox.framework in Frameworks */,
+				A10000060000000000000001 /* CoreAudio.framework in Frameworks */,
+				A10000070000000000000001 /* AVFoundation.framework in Frameworks */,
+				A10000080000000000000001 /* Metal.framework in Frameworks */,
+				A10000090000000000000001 /* QuartzCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000500000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A10000510000000000000001 /* KaloKorgTablet */,
+				A10000520000000000000001 /* Frameworks */,
+				A10000530000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000510000000000000001 /* KaloKorgTablet */ = {
+			isa = PBXGroup;
+			children = (
+				A10000130000000000000001 /* kalokorg_tablet.h */,
+				A10000100000000000000001 /* main.m */,
+				A10000110000000000000001 /* LaunchScreen.storyboard */,
+				A10000120000000000000001 /* Info.plist */,
+			);
+			path = KaloKorgTablet;
+			sourceTree = "<group>";
+		};
+		A10000520000000000000001 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A10000200000000000000001 /* UIKit.framework */,
+				A10000210000000000000001 /* Foundation.framework */,
+				A10000220000000000000001 /* AudioToolbox.framework */,
+				A10000230000000000000001 /* CoreAudio.framework */,
+				A10000240000000000000001 /* AVFoundation.framework */,
+				A10000250000000000000001 /* Metal.framework */,
+				A10000260000000000000001 /* QuartzCore.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A10000530000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000300000000000000001 /* KaloKorgTablet.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A10000600000000000000001 /* KaloKorgTablet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000900000000000000001 /* Build configuration list for PBXNativeTarget "KaloKorgTablet" */;
+			buildPhases = (
+				A10000610000000000000001 /* Compile Rust kalokorg-tablet Library */,
+				A10000620000000000000001 /* Sources */,
+				A10000400000000000000001 /* Frameworks */,
+				A10000630000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KaloKorgTablet;
+			productName = KaloKorgTablet;
+			productReference = A10000300000000000000001 /* KaloKorgTablet.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A10000700000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					A10000600000000000000001 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+				};
+			};
+			buildConfigurationList = A10000800000000000000001 /* Build configuration list for PBXProject "KaloKorgTablet" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000500000000000000001;
+			productRefGroup = A10000530000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A10000600000000000000001 /* KaloKorgTablet */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A10000630000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000020000000000000001 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A10000610000000000000001 /* Compile Rust kalokorg-tablet Library */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Rust kalokorg-tablet Library";
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/libkalokorg_tablet.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\nWORKSPACE_ROOT=\"$(cd \"$SRCROOT/../..\" && pwd)\"\n\nif [ \"$PLATFORM_NAME\" = \"iphonesimulator\" ]; then\n  if [ \"$NATIVE_ARCH_ACTUAL\" = \"arm64\" ] || [ \"$ARCHS\" = \"arm64\" ]; then\n    RUST_TARGET=\"aarch64-apple-ios-sim\"\n  else\n    RUST_TARGET=\"x86_64-apple-ios\"\n  fi\nelse\n  RUST_TARGET=\"aarch64-apple-ios\"\nfi\n\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  CARGO_PROFILE=\"--release\"\n  PROFILE_DIR=\"release\"\nelse\n  CARGO_PROFILE=\"\"\n  PROFILE_DIR=\"debug\"\nfi\n\necho \"Building kalokorg-tablet for $RUST_TARGET ($CONFIGURATION)...\"\ncd \"$WORKSPACE_ROOT\"\ncargo build -p kalokorg-tablet --target \"$RUST_TARGET\" $CARGO_PROFILE\ncp \"$WORKSPACE_ROOT/target/$RUST_TARGET/$PROFILE_DIR/libkalokorg_tablet.a\" \"$BUILT_PRODUCTS_DIR/libkalokorg_tablet.a\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A10000620000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A10000810000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		A10000820000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A10000910000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = KaloKorgTablet/Info.plist;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphoneos*]" = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphonesimulator*]" = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lkalokorg_tablet",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.voidwavelab.kalokorg.tablet;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		A10000920000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = KaloKorgTablet/Info.plist;
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphoneos*]" = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphonesimulator*]" = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(BUILT_PRODUCTS_DIR)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lkalokorg_tablet",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.voidwavelab.kalokorg.tablet;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A10000800000000000000001 /* Build configuration list for PBXProject "KaloKorgTablet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000810000000000000001 /* Debug */,
+				A10000820000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000900000000000000001 /* Build configuration list for PBXNativeTarget "KaloKorgTablet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000910000000000000001 /* Debug */,
+				A10000920000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A10000700000000000000001 /* Project object */;
+}
